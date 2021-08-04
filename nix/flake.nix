@@ -15,7 +15,6 @@
 
   outputs = { self, nixpkgs, unstable, openfoodfacts-server-src }:
     let
-
       # Generate a user-friendly version numer.
       version = "0.0.1";
       # builtins.substring 0 8 openfoodfacts-server-src.lastModifiedDate;
@@ -46,8 +45,7 @@
             [
               # mod_perl #broken in unstable
             ];
-          perlDeps = with perlPackages;
-            with extraPerlDeps; [
+          perlDeps = with perlPackages; [
               CGI
               TieIxHash
               LWPUserAgent
@@ -92,7 +90,6 @@
               # On Develop
               PerlCritic
               TermReadLineGnu
-              ActionCircuitBreaker
             ]; # ++ lib.attrNames extraPerlDeps;
 
           ex = with extraPerlDeps; lib.attrNames extraPerlDeps;
