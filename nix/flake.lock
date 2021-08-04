@@ -1,0 +1,55 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1627892869,
+        "narHash": "sha256-Fg0KPi9oGTZ7Ju7rb8foq0GOZI3++ZaF6wf10ClMA58=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "d4590d21006387dcb190c516724cb1e41c0f8fdf",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-21.05",
+        "type": "indirect"
+      }
+    },
+    "openfoodfacts-server-src": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-IRzSZCR1OWNz5ZNs4e92H2iTfbzQGdeojWdwBUDQIP8=",
+        "path": "../.",
+        "type": "path"
+      },
+      "original": {
+        "path": "../.",
+        "type": "path"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "openfoodfacts-server-src": "openfoodfacts-server-src",
+        "unstable": "unstable"
+      }
+    },
+    "unstable": {
+      "locked": {
+        "lastModified": 1627942574,
+        "narHash": "sha256-guUcGRWvY2mfiVSet2x/zeHIyflm2wgglj0ldg0mMio=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "c464dc811babfe316ed4ab7bbc12351122e69dd7",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-unstable",
+        "type": "indirect"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
