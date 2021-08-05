@@ -224,6 +224,7 @@ with perlPackages; rec {
       sha256 =
         "070bb252a8fe8b938a1ce4fc90525f833d4e619b6d4673b0ae0a23408d514ab6";
     };
+    nativeBuildInputs = [ CGI ];
     propagatedBuildInputs =
       [ ArchiveZip SpreadsheetParseExcel TextCSV_XS XMLParser ];
     meta = {
