@@ -1,6 +1,5 @@
-{ buildPerlPackage, lib, fetchurl, perlPackages, zbar, # BarcodeZBar
-tesseract # tesseractOCR
-}:
+{ buildPerlPackage, lib, fetchurl, perlPackages, which, zbar, imagemagick
+, tesseract }:
 
 with perlPackages; rec {
   XMLEncoding = buildPerlPackage {
@@ -162,8 +161,15 @@ with perlPackages; rec {
       sha256 =
         "98d904266a7062f09c9b46f77c4e94529e1fe99339e3f83fda1f92013f007cea";
     };
-    propagatedBuildInputs =
-      [ FileFindRule FileWhich LEOCHARRECLI StringShellQuote ];
+    nativeBuildInputs = [ which ];
+    propagatedBuildInputs = [
+      FileFindRule
+      FileWhich
+      LEOCHARRECLI
+      StringShellQuote
+      tesseract
+      imagemagick
+    ];
     meta = {
       description = "Read an image with tesseract ocr and get output";
       license = with lib.licenses; [ artistic1 gpl1Plus ];

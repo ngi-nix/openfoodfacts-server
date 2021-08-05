@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
     MongoDB
     EncodePunycode
     AlgorithmCheckDigits # Doesnt build
-    # ImageOCRTesseract # Cannot find tesseract executable??
+    ImageOCRTesseract
     CLDRNumber
     # DataDumperAutoEncode
     XMLRules
