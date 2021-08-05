@@ -38,25 +38,26 @@
       # Nixpkgs overlays.
       overlays = {
         openfoodfacts-server-backend = final: prev: {
-          openfoodfacts-server-backend = final.callPackage ./server-backend.nix {
-            src = openfoodfacts-server-src;
-            inherit version;
-          };
+          openfoodfacts-server-backend =
+            final.callPackage ./server-backend.nix {
+              src = openfoodfacts-server-src;
+              inherit version;
+            };
         };
 
         perlPackages = final: prev: rec {
           perlPackages = prev.perlPackages.override {
             overrides = pkgs: {
-              JSONParse = (prev.perlPackages.JSONParse.overrideAttrs
-                (oldAttrs: rec {
-                  version = "0.61";
-                  src = prev.fetchurl {
-                    url =
-                      "mirror://cpan/authors/id/B/BK/BKB/JSON-Parse-0.61.tar.gz";
-                    sha256 =
-                      "ce8e55e70bef9bcbba2e96af631d10a605900961a22cad977e71aab56c3f2806";
-                  };
-                }));
+              # JSON-Create requires JSONParse >= 0.60; nixpkgs version = 0.57
+              JSONParse = (prev.perlPackages.JSONParse.overrideAttrs (_: rec {
+                version = "0.61";
+                src = prev.fetchurl {
+                  url =
+                    "mirror://cpan/authors/id/B/BK/BKB/JSON-Parse-0.61.tar.gz";
+                  sha256 =
+                    "ce8e55e70bef9bcbba2e96af631d10a605900961a22cad977e71aab56c3f2806";
+                };
+              }));
             };
           } // final.callPackage ./localPerlPackages.nix { };
         };
