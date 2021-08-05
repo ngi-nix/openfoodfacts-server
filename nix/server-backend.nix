@@ -1,5 +1,5 @@
-{ src, version, lib, fetchurl, stdenv, perl, perlPackages, apacheHttpd, apacheHttpdPackages
-, imagemagick, graphviz, tesseract, gnumeric, localPerlPackages }:
+{ src, version, lib, fetchurl, stdenv, perl, perlPackages, apacheHttpd
+, apacheHttpdPackages, imagemagick, graphviz, tesseract, gnumeric }:
 
 stdenv.mkDerivation rec {
   name = "openfoodfacts-server-src-${version}";
@@ -56,9 +56,7 @@ stdenv.mkDerivation rec {
     # On Develop
     PerlCritic
     TermReadLineGnu
-  ];
 
-  localPerlInputs = with localPerlPackages; [
     # Locally defined Dependencies
     XMLEncoding
     # GraphicsColor # Doesnt build
@@ -67,8 +65,8 @@ stdenv.mkDerivation rec {
     ExcelWriterXLSX
     MongoDB
     EncodePunycode
-    # AlgorithmCheckDigits #Doesnt build
-    ImageOCRTesseract # Cannot find tesseract executable??
+    AlgorithmCheckDigits # Doesnt build
+    # ImageOCRTesseract # Cannot find tesseract executable??
     CLDRNumber
     # DataDumperAutoEncode
     XMLRules
@@ -80,9 +78,9 @@ stdenv.mkDerivation rec {
     ActionCircuitBreaker
     ActionRetry
 
-    #Test
+    ### Test ###
     LogAnyAdapterTAP
-    # Develop
+    ### Develop ###
     ApacheDB
   ];
 
@@ -110,7 +108,7 @@ stdenv.mkDerivation rec {
   # Why does TestSimple point to null instead of to TestSimple13?
 
   buildInputs = [ perl apacheHttpd imagemagick graphviz tesseract gnumeric ]
-    ++ apacheInputs ++ perlInputs ++ localPerlInputs;
+    ++ apacheInputs ++ perlInputs;
 
   buildPhase = "echo hello";
 

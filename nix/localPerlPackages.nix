@@ -1,4 +1,6 @@
-{ lib, fetchurl, buildPerlPackage, perlPackages }:
+{ buildPerlPackage, lib, fetchurl, perlPackages, zbar, # BarcodeZBar
+tesseract # tesseractOCR
+}:
 
 with perlPackages; rec {
   XMLEncoding = buildPerlPackage {
@@ -23,7 +25,15 @@ with perlPackages; rec {
       sha256 =
         "faa8fed5b2d80e5160af976e5db2242c0b3555542ce1042575ff6b694587a33d";
     };
-    buildInputs = [ TestNumberDelta ];
+    buildInputs = [
+      TestNumberDelta
+      ModulePluggable
+      TestDeep
+      TestWarn
+      TestException
+      TestDifferences
+      YAML
+    ];
     propagatedBuildInputs = [
       ColorLibrary
       Moose
@@ -38,7 +48,7 @@ with perlPackages; rec {
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
- BarcodeZBar = buildPerlPackage {
+  BarcodeZBar = buildPerlPackage {
     pname = "Barcode-ZBar";
     version = "0.04";
     src = fetchurl {
@@ -46,7 +56,12 @@ with perlPackages; rec {
       sha256 =
         "d57e1ad471b6a29fa4134650e6eec9eb834d42cbe8bf8f0608c67d6dd0f8f431";
     };
-    meta = { };
+    buildInputs = [ zbar ];
+    meta = {
+      homepage = "https://github.com/mchehab/zbar";
+      description = "Perl interface to the ZBar Barcode Reader";
+      license = with lib.licenses; [ gpl2Plus ];
+    };
   };
   experimental = buildPerlPackage {
     pname = "experimental";
@@ -180,7 +195,14 @@ with perlPackages; rec {
       sha256 =
         "2d9a0262ad443d321dc489ef6dfa7b3eed11a2708a75d397d371bb2585e5eca1";
     };
-    buildInputs = [ ModuleBuildPluggable ModuleBuildPluggableCPANfile ];
+    buildInputs = [
+      ModuleBuildPluggable
+      ModuleBuildPluggableCPANfile
+      TestSharedFork
+      TestPerlCritic
+      TestPodCoverage
+      TestPod
+    ];
     propagatedBuildInputs = [ IOInteractiveTiny ];
     meta = {
       description = "Dump with recursive encoding";
@@ -196,7 +218,7 @@ with perlPackages; rec {
         "3788255c07afe4195a0de72ce050652320d817528ff2d10c611f6e392043868b";
     };
     nativeBuildInputs = [ ModuleBuild ];
-    propagatedBuildInputs = [ XMLParser  ];
+    propagatedBuildInputs = [ XMLParser ];
     meta = {
       description =
         "Parse XML and specify what and how to keep/process for individual tags";

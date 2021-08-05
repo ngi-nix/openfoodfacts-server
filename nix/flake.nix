@@ -44,10 +44,6 @@
           };
         };
 
-        localPerlPackages = final: prev: {
-          localPerlPackages = final.callPackage ./perlDependencies.nix { };
-        };
-
         perlPackages = final: prev: rec {
           perlPackages = prev.perlPackages.override {
             overrides = pkgs: {
@@ -62,7 +58,7 @@
                   };
                 }));
             };
-          };
+          } // final.callPackage ./localPerlPackages.nix { };
         };
       };
 
