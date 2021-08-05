@@ -15,7 +15,7 @@ stdenv.mkDerivation rec {
     CGI
     TieIxHash
     LWPUserAgent
-    ImageMagick # Called PerlMagick in 21.05, not building in 21.05
+    ImageMagick # Called PerlMagick in 21.05, not building in 20.09
     MIMELite
     CacheMemcachedFast
     JSON
