@@ -195,7 +195,8 @@ with perlPackages; rec {
       sha256 =
         "3788255c07afe4195a0de72ce050652320d817528ff2d10c611f6e392043868b";
     };
-    propagatedBuildInputs = [ XMLParser ];
+    nativeBuildInputs = [ ModuleBuild ];
+    propagatedBuildInputs = [ XMLParser  ];
     meta = {
       description =
         "Parse XML and specify what and how to keep/process for individual tags";
