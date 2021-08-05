@@ -38,7 +38,7 @@ with perlPackages; rec {
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
-  BarcodeZBar = buildPerlPackage {
+ BarcodeZBar = buildPerlPackage {
     pname = "Barcode-ZBar";
     version = "0.04";
     src = fetchurl {
@@ -308,7 +308,6 @@ with perlPackages; rec {
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
-  # Dependency of ActionRetry
   MathFibonacci = buildPerlPackage {
     pname = "Math-Fibonacci";
     version = "1.5";
@@ -320,7 +319,6 @@ with perlPackages; rec {
     meta = { };
   };
 
-  #Dependency of DataDumperAutoEncode
   ModuleBuildPluggableCPANfile = buildPerlModule {
     pname = "Module-Build-Pluggable-CPANfile";
     version = "0.05";
@@ -351,7 +349,6 @@ with perlPackages; rec {
     meta = { description = "Is_interactive() without large deps"; };
   };
 
-  # Dependency of FilechmodRecursive
   Filechmod = buildPerlPackage {
     pname = "File-chmod";
     version = "0.42";
@@ -367,7 +364,6 @@ with perlPackages; rec {
     };
   };
 
-  # Dependency of GraphicsColor
   ColorLibrary = buildPerlPackage {
     pname = "Color-Library";
     version = "0.021";
@@ -493,7 +489,6 @@ with perlPackages; rec {
     };
   };
 
-  # On Test
   LogAnyAdapterTAP = buildPerlPackage {
     pname = "Log-Any-Adapter-TAP";
     version = "0.003003";
@@ -511,7 +506,6 @@ with perlPackages; rec {
     };
   };
 
-  #On Develop
   ApacheDB = buildPerlPackage {
     pname = "Apache-DB";
     version = "0.18";
