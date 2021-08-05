@@ -132,7 +132,7 @@ with perlPackages; rec {
       sha256 =
         "a956d0517180d6d9042f47d73aa6a2728b75fcbd546940d2dbe0a7e7cf428f73";
     };
-    buildInputs = [ ProbePerl ];
+    buildInputs = [ ProbePerl ModuleBuild ];
     meta = {
       description = "Perl extension to generate and test check digits";
       license = with lib.licenses; [ artistic1 gpl1Plus ];
