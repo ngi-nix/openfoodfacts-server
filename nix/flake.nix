@@ -28,7 +28,7 @@
 
       # Nixpkgs instantiated for supported system types.
       nixpkgsFor = forAllSystems (system:
-        import unstable {
+        import nixpkgs {
           inherit system;
           overlays = nixpkgs.lib.attrValues self.overlays;
         });

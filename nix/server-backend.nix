@@ -8,14 +8,14 @@ stdenv.mkDerivation rec {
 
   apacheInputs = with apacheHttpdPackages;
     [
-      # mod_perl #broken in unstable
+      mod_perl #broken in unstable
     ];
 
   perlInputs = with perlPackages; [
     CGI
     TieIxHash
     LWPUserAgent
-    ImageMagick # Called PerlMagick in 21.05, not building in 20.09
+    PerlMagick # Called ImageMagick in unstable, not building in 20.09
     MIMELite
     CacheMemcachedFast
     JSON
@@ -24,7 +24,7 @@ stdenv.mkDerivation rec {
     CryptPasswdMD5
     EncodeDetect
     XMLFeedPP
-    # libapreq2 # has a dependency on mod_perl so also breaks the build
+    libapreq2 # has a dependency on mod_perl so also breaks the build on unstable
     DigestMD5 # see comments
     TimeLocal
     TemplateToolkit
