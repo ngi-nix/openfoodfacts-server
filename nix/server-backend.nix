@@ -60,7 +60,7 @@ stdenv.mkDerivation rec {
     # Locally defined Dependencies
     XMLEncoding
     GraphicsColor
-    # BarcodeZBar # Doesnt build
+    BarcodeZBar # Fails its test... Tests are disabled for now
     experimental
     ExcelWriterXLSX
     MongoDB

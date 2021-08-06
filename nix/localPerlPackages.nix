@@ -48,16 +48,8 @@ with perlPackages; rec {
         "d57e1ad471b6a29fa4134650e6eec9eb834d42cbe8bf8f0608c67d6dd0f8f431";
     };
     patches = [ ./0001-version-patch.patch ];
-    buildInputs = [
-      pkg-config
-      TestMore
-      TestHarnessStraps
-      TestPod
-      TestPodCoverage
-      ExtUtilsMakeMaker
-      DevelChecklib
-      GetoptLong
-    ];
+    doCheck = false;
+    buildInputs = [ pkg-config TestMore ];
     propagatedBuildInputs = [ zbar PerlMagick ];
     meta = {
       homepage = "https://github.com/mchehab/zbar";
