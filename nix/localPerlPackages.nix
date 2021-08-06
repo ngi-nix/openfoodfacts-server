@@ -204,10 +204,7 @@ with perlPackages; rec {
     buildInputs = [
       ModuleBuildPluggable
       ModuleBuildPluggableCPANfile
-      TestSharedFork
-      TestPerlCritic
-      TestPodCoverage
-      TestPod
+      ModuleBuild
     ];
     propagatedBuildInputs = [ IOInteractiveTiny ];
     meta = {
