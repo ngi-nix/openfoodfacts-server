@@ -356,7 +356,7 @@ with perlPackages; rec {
       sha256 =
         "4aec6cba240cb6e78016406b6a3a875634cc2aec08ffc5f1572da1cdc40e1e7c";
     };
-    buildInputs = [ CaptureTiny TestRequires ];
+    buildInputs = [ CaptureTiny TestRequires TestSharedFork ];
     propagatedBuildInputs = [ ModuleBuildPluggable ModuleCPANfile ];
     meta = {
       homepage = "https://github.com/kazeburo/Module-Build-Pluggable-CPANfile";
