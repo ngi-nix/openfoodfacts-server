@@ -1,5 +1,5 @@
-{ buildPerlPackage, lib, fetchurl, perlPackages, which, zbar, imagemagick
-, tesseract }:
+{ buildPerlPackage, lib, pkg-config, fetchurl, perlPackages, which, zbar
+, imagemagick, tesseract }:
 
 with perlPackages; rec {
   XMLEncoding = buildPerlPackage {
@@ -47,7 +47,18 @@ with perlPackages; rec {
       sha256 =
         "d57e1ad471b6a29fa4134650e6eec9eb834d42cbe8bf8f0608c67d6dd0f8f431";
     };
-    buildInputs = [ zbar ];
+    patches = [ ./0001-version-patch.patch ];
+    buildInputs = [
+      pkg-config
+      TestMore
+      TestHarnessStraps
+      TestPod
+      TestPodCoverage
+      ExtUtilsMakeMaker
+      DevelChecklib
+      GetoptLong
+    ];
+    propagatedBuildInputs = [ zbar PerlMagick ];
     meta = {
       homepage = "https://github.com/mchehab/zbar";
       description = "Perl interface to the ZBar Barcode Reader";
