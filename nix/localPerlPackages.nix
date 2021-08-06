@@ -91,11 +91,17 @@ with perlPackages; rec {
       sha256 =
         "201935f92dac94f39c35de73661e8b252439e496f228657db85ff93257c3268f";
     };
-    buildInputs = [ JSONMaybeXS PathTiny TestDeep TestFatal ];
+    buildInputs = [ JSONMaybeXS PathTiny TestDeep TestFatal TimeMoment ];
     propagatedBuildInputs = [
       AuthenSASLSASLprep
       AuthenSCRAM
       BSON
+      IOSocketSSL
+      NetSSLeay
+      ClassXSAccessor
+      BSONXS
+      TypeTinyXS
+      MozillaCA
       Moo
       NetDNS
       SafeIsa
@@ -615,5 +621,55 @@ with perlPackages; rec {
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
+
+  TimeMoment = buildPerlPackage {
+    pname = "Time-Moment";
+    version = "0.44";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/C/CH/CHANSEN/Time-Moment-0.44.tar.gz";
+      sha256 =
+        "64acfa042f634fcef8dadf55e7f42ba4eaab8aaeb7d5212eb89815a31f78f6fd";
+    };
+    buildInputs = [ TestFatal TestNumberDelta TestRequires ];
+    meta = {
+      description = "Represents a date and time of day with an offset from UTC";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
+  BSONXS = buildPerlPackage {
+    pname = "BSON-XS";
+    version = "0.8.4";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/M/MO/MONGODB/BSON-XS-v0.8.4.tar.gz";
+      sha256 =
+        "28f7d338fd78b6f9c9a6080be9de3f5cb23d888b96ebf6fcbface9f2966aebf9";
+    };
+    buildInputs =
+      [ ConfigAutoConf JSONMaybeXS PathTiny TestDeep TestFatal TieIxHash ];
+    propagatedBuildInputs = [ BSON boolean JSONXS JSONPP CpanelJSONXS ];
+    meta = {
+      homepage = "https://github.com/mongodb-labs/mongo-perl-bson-xs";
+      description = "XS implementation of MongoDB's BSON serialization (EOL)";
+      license = lib.licenses.asl20;
+    };
+  };
+
+  TypeTinyXS = buildPerlPackage {
+    pname = "Type-Tiny-XS";
+    version = "0.022";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/T/TO/TOBYINK/Type-Tiny-XS-0.022.tar.gz";
+      sha256 =
+        "bcc34a31f7dc1d30cc803889b5c8f90e4773b73b5becbdb3860f5abe7e22ff00";
+    };
+    meta = {
+      homepage = "https://metacpan.org/release/Type-Tiny-XS";
+      description =
+        "Provides an XS boost for some of Type::Tiny's built-in type constraints";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
 
 }
