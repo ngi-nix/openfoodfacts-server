@@ -59,16 +59,16 @@ stdenv.mkDerivation rec {
 
     # Locally defined Dependencies
     XMLEncoding
-    # GraphicsColor # Doesnt build
+    GraphicsColor
     # BarcodeZBar # Doesnt build
     experimental
     ExcelWriterXLSX
     MongoDB
     EncodePunycode
-    AlgorithmCheckDigits # Doesnt build
+    AlgorithmCheckDigits
     ImageOCRTesseract
     CLDRNumber
-    # DataDumperAutoEncode
+    DataDumperAutoEncode
     XMLRules
     TextFuzzy
     SpreadsheetCSV
