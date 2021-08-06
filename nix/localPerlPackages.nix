@@ -397,7 +397,14 @@ with perlPackages; rec {
       sha256 =
         "58cbf7e333d3a4a40297abc43412b321da449c6816020e4fa6625ab079fc90a5";
     };
-    buildInputs = [ TestMost ];
+    buildInputs = [
+      TestMost
+      TestWarn
+      TestException
+      TestDeep
+      TestDifferences
+      ModulePluggable
+    ];
     propagatedBuildInputs = [ ClassAccessor ClassDataInheritable ];
     meta = {
       description = "An easy-to-use and comprehensive named-color library";
