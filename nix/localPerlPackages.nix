@@ -201,11 +201,8 @@ with perlPackages; rec {
       sha256 =
         "2d9a0262ad443d321dc489ef6dfa7b3eed11a2708a75d397d371bb2585e5eca1";
     };
-    buildInputs = [
-      ModuleBuildPluggable
-      ModuleBuildPluggableCPANfile
-      ModuleBuild
-    ];
+    buildInputs =
+      [ ModuleBuildPluggable ModuleBuildPluggableCPANfile ModuleBuild ];
     propagatedBuildInputs = [ IOInteractiveTiny ];
     meta = {
       description = "Dump with recursive encoding";
