@@ -37,9 +37,9 @@
 
       # Nixpkgs overlays.
       overlays = {
-        openfoodfacts-server-backend = final: prev: {
-          openfoodfacts-server-backend =
-            final.callPackage ./server-backend.nix {
+        product-opener = final: prev: {
+          product-opener =
+            final.callPackage ./product-opener.nix {
               src = openfoodfacts-server-src;
               inherit version;
             };
@@ -65,18 +65,27 @@
 
       # Provide some binary packages for selected system types.
       packages = forAllSystems (system: {
-        inherit (nixpkgsFor.${system}) openfoodfacts-server-backend;
+        inherit (nixpkgsFor.${system}) product-opener;
       });
 
       # The default package for 'nix build'. This makes sense if the
       # flake provides only one package or there is a clear "main"
       # package.
       defaultPackage = forAllSystems
-        (system: self.packages.${system}.openfoodfacts-server-backend);
+        (system: self.packages.${system}.product-opener);
 
       devShell = forAllSystems (system:
         let pkgs = nixpkgsFor.${system};
-        in with pkgs; mkShell { buildInputs = [ openfoodfacts-server-backend ]; });
+        in with pkgs;
+        mkShell {
+          buildInputs = [
+            product-opener
+
+            # Readline support for the Perl debugger
+            perlPackages.TermReadLineGnu
+            perlPackages.TermReadKey
+          ];
+        });
 
       # A NixOS module, if applicable (e.g. if the package provides a system service).
       # nixosModules.openfoodfacts-server = { pkgs, ... }: {
