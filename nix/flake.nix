@@ -74,6 +74,10 @@
       defaultPackage = forAllSystems
         (system: self.packages.${system}.openfoodfacts-server-backend);
 
+      devShell = forAllSystems (system:
+        let pkgs = nixpkgsFor.${system};
+        in with pkgs; mkShell { buildInputs = [ openfoodfacts-server-backend ]; });
+
       # A NixOS module, if applicable (e.g. if the package provides a system service).
       # nixosModules.openfoodfacts-server = { pkgs, ... }: {
       #   nixpkgs.overlays = [ self.overlay ];
