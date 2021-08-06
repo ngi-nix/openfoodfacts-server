@@ -24,15 +24,7 @@ with perlPackages; rec {
       sha256 =
         "faa8fed5b2d80e5160af976e5db2242c0b3555542ce1042575ff6b694587a33d";
     };
-    buildInputs = [
-      TestNumberDelta
-      ModulePluggable
-      TestDeep
-      TestWarn
-      TestException
-      TestDifferences
-      YAML
-    ];
+    buildInputs = [ TestNumberDelta ModulePluggable ];
     propagatedBuildInputs = [
       ColorLibrary
       Moose
