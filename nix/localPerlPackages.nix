@@ -542,4 +542,57 @@ with perlPackages; rec {
     meta = { };
   };
 
+  TestDeepJSON = buildPerlModule {
+    pname = "Test-Deep-JSON";
+    version = "0.05";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/M/MO/MOTEMEN/Test-Deep-JSON-0.05.tar.gz";
+      sha256 =
+        "aec8571b9e31b7301e26132c132c6800952dc089c645d76954a3ad1a6b350858";
+    };
+    buildInputs = [ ModuleBuildTiny ];
+    propagatedBuildInputs = [ ExporterLite JSONMaybeXS TestDeep ];
+    meta = {
+      homepage = "https://github.com/motemen/perl5-Test-Deep-JSON";
+      description = "Compare JSON with Test::Deep";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
+  YAMLOld = buildPerlPackage {
+    pname = "YAML-Old";
+    version = "1.23";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/I/IN/INGY/YAML-Old-1.23.tar.gz";
+      sha256 =
+        "fa546fcd9acc5a39bc8871902f7fc1eba50e7dc781c5cd5c0abf1aece6d17ecd";
+    };
+    buildInputs = [ TestYAML TestBase ];
+    meta = {
+      homepage = "https://github.com/ingydotnet/yaml-old-pm";
+      description = "Old YAML.pm Legacy Code";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
+  MooseXStorageFormatJSONpm = buildPerlPackage {
+    pname = "MooseX-Storage-Format-JSONpm";
+    version = "0.093093";
+    src = fetchurl {
+      url =
+        "mirror://cpan/authors/id/R/RJ/RJBS/MooseX-Storage-Format-JSONpm-0.093093.tar.gz";
+      sha256 =
+        "ebe0407a7eb1870270e0e2579f097dfd7df2aea3307fb71f324fb69e242cc58f";
+    };
+    buildInputs =
+      [ Moose TestDeepJSON TestWithoutModule DigestHMAC MooseXTypes ];
+    propagatedBuildInputs =
+      [ JSON MooseXRoleParameterized MooseXStorage namespaceautoclean ];
+    meta = {
+      homepage = "https://github.com/rjbs/MooseX-Storage-Format-JSONpm";
+      description = "A format role for MooseX::Storage using JSON.pm";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+
 }
