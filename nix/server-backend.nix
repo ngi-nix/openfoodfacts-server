@@ -114,6 +114,6 @@ stdenv.mkDerivation rec {
 
   meta = {
     homepage = "https://world.openfoodfacts.org/";
-    description = "The backed of the Open Food Facts Server";
+    description = "The backend of the Open Food Facts Server";
   };
 }
