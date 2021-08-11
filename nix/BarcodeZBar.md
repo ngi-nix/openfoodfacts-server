@@ -107,6 +107,9 @@ BarcodeZBar = buildPerlPackage {
 ```
 
 #### Logs
+<details>
+    <summary>Click to see full logs</summary>
+
 ```
 [nix-shell:~/summer-of-nix/openfoodfacts-server/nix]$ nix-build test.nix
 this derivation will be built:
@@ -277,3 +280,5 @@ error: builder for '/nix/store/gww59146rs399rjc3fnawrjng4pqf6dl-perl5.32.1-Barco
        > make: *** [Makefile:1040: test_dynamic] Error 255
        For full logs, run 'nix log /nix/store/gww59146rs399rjc3fnawrjng4pqf6dl-perl5.32.1-Barcode-ZBar-0.04.drv'.
 ```
+</details>
+
