@@ -34,15 +34,13 @@
         });
 
     in {
-
       # Nixpkgs overlays.
       overlays = {
         product-opener = final: prev: {
-          product-opener =
-            final.callPackage ./product-opener.nix {
-              src = openfoodfacts-server-src;
-              inherit version;
-            };
+          product-opener = final.callPackage ./product-opener.nix {
+            src = openfoodfacts-server-src;
+            inherit version;
+          };
         };
 
         perlPackages = final: prev: rec {
@@ -64,15 +62,14 @@
       };
 
       # Provide some binary packages for selected system types.
-      packages = forAllSystems (system: {
-        inherit (nixpkgsFor.${system}) product-opener;
-      });
+      packages = forAllSystems
+        (system: { inherit (nixpkgsFor.${system}) product-opener; });
 
       # The default package for 'nix build'. This makes sense if the
       # flake provides only one package or there is a clear "main"
       # package.
-      defaultPackage = forAllSystems
-        (system: self.packages.${system}.product-opener);
+      defaultPackage =
+        forAllSystems (system: self.packages.${system}.product-opener);
 
       devShell = forAllSystems (system:
         let pkgs = nixpkgsFor.${system};
@@ -88,7 +85,9 @@
         });
 
       # A NixOS module, if applicable (e.g. if the package provides a system service).
-      nixosModules.server-backend = ./server-backend.nix;
+      nixosModules = {
+        server-backend = ./server-backend.nix;
+      };
 
       nixosConfigurations.container = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
