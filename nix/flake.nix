@@ -88,13 +88,19 @@
         });
 
       # A NixOS module, if applicable (e.g. if the package provides a system service).
-      # nixosModules.openfoodfacts-server = { pkgs, ... }: {
-      #   nixpkgs.overlays = [ self.overlay ];
+      nixosModules.server-backend = ./server-backend.nix;
 
-      #   environment.systemPackages = [ pkgs.openfoodfacts-server ];
-
-      #   #systemd.services = { ... };
-      # };
-
+      nixosConfigurations.container = nixpkgs.lib.nixosSystem rec {
+        system = "x86_64-linux";
+        specialArgs = { src = openfoodfacts-server-src; };
+        pkgs = nixpkgsFor.${system};
+        modules = [
+          self.nixosModules.server-backend
+          ({ pkgs, ... }: {
+            system.configurationRevision =
+              nixpkgs.lib.mkIf (self ? rev) self.rev;
+          })
+        ];
+      };
     };
 }
