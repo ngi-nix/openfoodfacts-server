@@ -674,5 +674,33 @@ with perlPackages; rec {
     };
   };
 
+  LocaleMaketextLexiconGetcontext = buildPerlPackage {
+    pname = "Locale-Maketext-Lexicon-Getcontext";
+    version = "0.05";
+    src = fetchurl {
+      url =
+        "mirror://cpan/authors/id/S/SA/SAPER/Locale-Maketext-Lexicon-Getcontext-0.05.tar.gz";
+      sha256 =
+        "75cb33df9472a5962de54082f42c6a76b260fc405ba10ca53246fb1f82c09208";
+    };
+    propagatedBuildInputs = [ LocaleMaketextLexicon ];
+    meta = {
+      description = "PO file parser for Maketext";
+      license = lib.licenses.mit;
+    };
+  };
 
+  URIEscapeXS = buildPerlPackage {
+    pname = "URI-Escape-XS";
+    version = "0.14";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/D/DA/DANKOGAI/URI-Escape-XS-0.14.tar.gz";
+      sha256 =
+        "c39ac50c6c2b831ae4bf08692e6ca5d4a3f9c57dc4d7f9c4cb0663e2c86c2759";
+    };
+    meta = {
+      description = "Drop-In replacement for URI::Escape";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
 }
