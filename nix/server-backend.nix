@@ -84,8 +84,44 @@ in {
 
   boot.isContainer = true;
 
+  # system.activationScripts.test =
+  #   "${src}/docker/backend-dev/conf/po-foreground.sh";
+  #
+  # This is a rough copy of the above script for dirty testing
+  #
+  system.activationScripts.copy.text = ''
+    mkdir -p /opt/product-opener
+
+    # These should really be bind mounts
+    cp -r ${src}/. /opt/product-opener
+    cp ${src}/docker/backend-dev/conf/Config.pm /opt/product-opener/lib/ProductOpener
+    cp ${src}/docker/backend-dev/conf/Config2.pm /opt/product-opener/lib/ProductOpener
+
+    mkdir -p /mnt/podata/products /mnt/podata/logs /mnt/podata/users /mnt/podata/po /mnt/podata/orgs
+    ln -sf /opt/product-opener/lang /mnt/podata/lang
+    ln -sf /opt/product-opener/po/common /mnt/podata/po/common
+    ln -sf /opt/product-opener/po/openfoodfacts /mnt/podata/po/site-specific
+    ln -sf /opt/product-opener/po/tags /mnt/podata/po/tags
+    ln -sf /opt/product-opener/taxonomies /mnt/podata/taxonomies
+    ln -sf /opt/product-opener/ingredients /mnt/podata/ingredients
+    ln -sf /opt/product-opener/emb_codes /mnt/podata/emb_codes
+    ln -sf /opt/product-opener/packager-codes /mnt/podata/packager-codes
+    ln -sf /opt/product-opener/ecoscore /mnt/podata/ecoscore
+    ln -sf /opt/product-opener/forest-footprint /mnt/podata/forest-footprint
+    ln -sf /opt/product-opener/templates /mnt/podata/templates
+
+    chown -R wwwdata:wwwdata /mnt/podata
+    chown -R wwwdata:wwwdata /opt/product-opener/html/images/products
+  '';
+
+
+  # Useful Test scripts
+  # Once these 2 are working then we are getting somewhere
+  # perl -I/opt/product-opener/lib /opt/product-opener/scripts/build_lang.pl
+  # perl -I/opt/product-opener/lib /opt/product-opener/lib/startup_apache2.pl
+
   networking = {
-    # hostName = "server"; # How does this function inside a container?
+    hostName = "server"; # How does this function inside a container?
     useDHCP = false;
     firewall.allowedTCPPorts = [ 80 ];
   };
@@ -94,18 +130,12 @@ in {
   services.httpd = {
     enable = true;
     enablePerl = true;
-    # configFile =
-    #   "${inputs.openfoodfacts-server-src}/docker/backend-dev/conf/apache.conf";
-    adminAddr = "morty@example.org";
-
-    virtualHosts.localhost = {
-      documentRoot = src;
-    };
+    extraConfig = builtins.readFile "${src}/docker/backend-dev/conf/apache.conf";
+    adminAddr = "test@test.com";
   };
 
   environment.systemPackages = with pkgs; [
     perlWithModules
-    apacheHttpd
     imagemagick
     graphviz
     tesseract
