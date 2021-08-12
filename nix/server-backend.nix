@@ -2,6 +2,7 @@
 let
   perlWithModules = pkgs.perl.withPackages (pp:
     with pkgs.perlPackages; [
+      mod_perl2
       CGI
       TieIxHash
       LWPUserAgent
@@ -13,12 +14,15 @@ let
       Clone
       CryptPasswdMD5
       EncodeDetect
+      XMLSimple
       XMLFeedPP
       libapreq2
       DigestMD5File
       TimeLocal
       TemplateToolkit
-      AnyURIEscape
+      # AnyURIEscape # Wasnt working perhaps needs to be updated?
+      URIEscapeXS
+      URIFind
       MathRandomSecure
       EmailStuffer
       FileCopyRecursive
@@ -68,12 +72,14 @@ let
       JSONCreate
       ActionCircuitBreaker
       ActionRetry
+      LocaleMaketextLexiconGetcontext
 
       ### Test ###
       LogAnyAdapterTAP
       ### Develop ###
       ApacheDB
     ]);
+
 in {
 
   boot.isContainer = true;
