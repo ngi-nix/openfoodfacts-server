@@ -726,6 +726,7 @@ with perlPackages; rec {
       sha256 =
         "0fd90d4efea82d6e262e6933759e85d27cbcfa4091b14bf4042ae20bab528e53";
     };
+    doCheck = false;
     meta = {
       homepage = "http://testanything.org/";
       license = with lib.licenses; [ artistic1 gpl1Plus ];

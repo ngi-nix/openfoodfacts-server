@@ -4,6 +4,8 @@
 
   # Nixpkgs / NixOS version to use.
   inputs.nixpkgs.url = "nixpkgs/nixos-21.05"; # PerlMagick Not Building
+  inputs.nixpkgs-ancient.url = "github:NixOS/nixpkgs?rev=12408341763b8f2f0f0a88001d9650313f6371d5";
+  inputs.nixpkgs-ancient.flake = false;
   inputs.unstable.url =
     "nixpkgs/nixos-unstable"; # Perl is no longer split so Perl530 becomes Perl, modPerl package is broken
 
@@ -13,7 +15,7 @@
     flake = false;
   };
 
-  outputs = { self, nixpkgs, unstable, openfoodfacts-server-src }:
+  outputs = { self, nixpkgs, nixpkgs-ancient, unstable, openfoodfacts-server-src }:
     let
       # Generate a user-friendly version numer.
       version = "0.0.1";
@@ -37,7 +39,7 @@
       # Nixpkgs overlays.
       overlays = {
         test = final: prev: {
-          test = final.callPackage ./test.nix { pkgs = final; };
+          test = final.callPackage ./test.nix { pkgs = final; pkgsAncient = import nixpkgs-ancient { system = final.system; }; };
         };
 
         product-opener = final: prev: {
