@@ -49,7 +49,7 @@ with perlPackages; rec {
     };
     patches = [ ./0001-version-patch.patch ];
     doCheck = false;
-    buildInputs = [ pkg-config TestMore ];
+    buildInputs = [ pkg-config TestMore ExtUtilsMakeMaker TestHarness ];
     propagatedBuildInputs = [ zbar PerlMagick ];
     meta = {
       homepage = "https://github.com/mchehab/zbar";
@@ -700,6 +700,34 @@ with perlPackages; rec {
     };
     meta = {
       description = "Drop-In replacement for URI::Escape";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+  ExtUtilsMakeMaker = buildPerlPackage {
+    pname = "ExtUtils-MakeMaker";
+    version = "7.62";
+    src = fetchurl {
+      url =
+        "mirror://cpan/authors/id/B/BI/BINGOS/ExtUtils-MakeMaker-7.62.tar.gz";
+      sha256 =
+        "5022ad857fd76bd3f6b16af099fe2324639d9932e08f21e891fb313d9cae1705";
+    };
+    meta = {
+      homepage = "https://metacpan.org/release/ExtUtils-MakeMaker";
+      description = "Create a module Makefile";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+  TestHarness = buildPerlPackage {
+    pname = "Test-Harness";
+    version = "3.42";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/L/LE/LEONT/Test-Harness-3.42.tar.gz";
+      sha256 =
+        "0fd90d4efea82d6e262e6933759e85d27cbcfa4091b14bf4042ae20bab528e53";
+    };
+    meta = {
+      homepage = "http://testanything.org/";
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
