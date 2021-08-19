@@ -1,6 +1,8 @@
 { pkgs, pkgsAncient }:
 
-let zbar = pkgsAncient.zbar; in
+let
+  zbar = pkgs.callPackage ./zbar.nix { inherit (pkgsAncient) imagemagickBig; };
+in
 
 with pkgs;
 with perlPackages;
