@@ -14,7 +14,7 @@
       openfoodfacts-server-src = self;
 
       # Generate a user-friendly version numer.
-      builtins.substring 0 8 self.lastModifiedDate;
+      version = builtins.substring 0 8 self.lastModifiedDate;
 
       # System types to support.
       supportedSystems = [ "x86_64-linux" ];
