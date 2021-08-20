@@ -7,14 +7,20 @@
   inputs.unstable.url =
     "nixpkgs/nixos-unstable"; # Perl is no longer split so Perl530 becomes Perl, modPerl package is broken
 
+  # Upstream source tree(s).
+  inputs.openfoodfacts-server-src = {
+    url = "path:../.";
+    flake = false;
+  };
+
   outputs =
-    { self, nixpkgs, unstable }:
+    { self, nixpkgs, unstable, openfoodfacts-server-src }:
     let
       zbar-src = nixpkgs.legacyPackages.x86_64-linux.zbar.src;
-      openfoodfacts-server-src = self;
 
       # Generate a user-friendly version numer.
-      builtins.substring 0 8 self.lastModifiedDate;
+      version = "0.0.1";
+      # builtins.substring 0 8 openfoodfacts-server-src.lastModifiedDate;
 
       # System types to support.
       supportedSystems = [ "x86_64-linux" ];
@@ -34,14 +40,14 @@
       # Nixpkgs overlays.
       overlays = {
         test = final: prev: {
-          test = final.callPackage ./nix/test.nix {
+          test = final.callPackage ./test.nix {
             pkgs = final;
             src = "${zbar-src}/perl";
           };
         };
 
         product-opener = final: prev: {
-          product-opener = final.callPackage ./nix/product-opener.nix {
+          product-opener = final.callPackage ./product-opener.nix {
             src = openfoodfacts-server-src;
             inherit version;
           };
@@ -61,7 +67,7 @@
                 };
               }));
             };
-          } // final.callPackage ./nix/localPerlPackages.nix { };
+          } // final.callPackage ./localPerlPackages.nix { };
         };
       };
 
@@ -91,7 +97,7 @@
         });
 
       # A NixOS module, if applicable (e.g. if the package provides a system service).
-      nixosModules = { server-backend = ./nix/server-backend.nix; };
+      nixosModules = { server-backend = ./server-backend.nix; };
 
       nixosConfigurations.container = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
@@ -99,7 +105,6 @@
         pkgs = nixpkgsFor.${system};
         modules = [
           self.nixosModules.server-backend
-
           ({ pkgs, ... }: {
             boot.isContainer = true;
 

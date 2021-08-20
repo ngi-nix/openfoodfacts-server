@@ -81,6 +81,8 @@ let
 
 in {
 
+  system.build.perl = perlWithModules;
+
   # system.activationScripts.test =
   #   "${src}/docker/backend-dev/conf/po-foreground.sh";
   #
