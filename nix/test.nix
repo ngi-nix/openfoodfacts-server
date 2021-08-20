@@ -1,4 +1,4 @@
-{ pkgs, pkgsAncient, src }:
+{ pkgs, src }:
 
 with pkgs;
 with perlPackages;
@@ -32,10 +32,10 @@ let
 
   Zbar = buildPerlPackage {
     pname = "Barcode-ZBar";
-    version = "0.04";
+    version = zbar.version;
     src = "${zbar.src}/perl";
     postPatch = ''
-    substituteInPlace Makefile.PL --replace "-lzbar" "-L${zbar.lib}/lib -lzbar"
+      substituteInPlace Makefile.PL --replace "-lzbar" "-L${zbar.lib}/lib -lzbar"
     '';
     doCheck = false;
     buildInputs = [ TestPodCoverage TestPod DevelChecklib TestHarness TestMore ExtUtilsMakeMaker ];

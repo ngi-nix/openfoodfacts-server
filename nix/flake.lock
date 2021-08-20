@@ -15,23 +15,6 @@
         "type": "indirect"
       }
     },
-    "nixpkgs-ancient": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1552326686,
-        "narHash": "sha256-HMaM8vG6EWmuz+fiMprQs2RpFF2cpkcDqzeDidRpb58=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "12408341763b8f2f0f0a88001d9650313f6371d5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "12408341763b8f2f0f0a88001d9650313f6371d5",
-        "type": "github"
-      }
-    },
     "openfoodfacts-server-src": {
       "flake": false,
       "locked": {
@@ -47,10 +30,8 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
-        "nixpkgs-ancient": "nixpkgs-ancient",
         "openfoodfacts-server-src": "openfoodfacts-server-src",
-        "unstable": "unstable",
-        "zbar-src": "zbar-src"
+        "unstable": "unstable"
       }
     },
     "unstable": {
@@ -66,22 +47,6 @@
         "id": "nixpkgs",
         "ref": "nixos-unstable",
         "type": "indirect"
-      }
-    },
-    "zbar-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1615804643,
-        "narHash": "sha256-9dIzFoq59roQaVe+o2VkcY3UHf38vMIfpeofsa/m5Ks=",
-        "owner": "mchehab",
-        "repo": "zbar",
-        "rev": "4e0f618b54af060fc3516acfb34b6023ed064620",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mchehab",
-        "repo": "zbar",
-        "type": "github"
       }
     }
   },
