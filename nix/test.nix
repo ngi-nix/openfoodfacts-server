@@ -35,12 +35,10 @@ let
     version = "0.04";
     src = "${zbar.src}/perl";
     postPatch = ''
-    ls ${zbar.lib}/lib
     substituteInPlace Makefile.PL --replace "-lzbar" "-L${zbar.lib}/lib -lzbar"
-    cat Makefile.PL
     '';
-    doCheck = true;
-    buildInputs = [ DevelChecklib TestHarness TestMore ExtUtilsMakeMaker ];
+    doCheck = false;
+    buildInputs = [ TestPodCoverage TestPod DevelChecklib TestHarness TestMore ExtUtilsMakeMaker ];
     propagatedBuildInputs = [ zbar PerlMagick ];
     meta = {
       homepage = "https://github.com/mchehab/zbar";
