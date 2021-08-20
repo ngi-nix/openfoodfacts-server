@@ -33,9 +33,11 @@ let
   Zbar = buildPerlPackage {
     pname = "Barcode-ZBar";
     version = "0.04";
-    inherit src;
+    src = "${zbar.src}/perl";
     postPatch = ''
-      export LD_LIBRARY_PATH=${zbar.lib}
+    ls ${zbar.lib}/lib
+    substituteInPlace Makefile.PL --replace "-lzbar" "-L${zbar.lib}/lib -lzbar"
+    cat Makefile.PL
     '';
     doCheck = true;
     buildInputs = [ DevelChecklib TestHarness TestMore ExtUtilsMakeMaker ];
