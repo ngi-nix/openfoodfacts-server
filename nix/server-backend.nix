@@ -2,7 +2,6 @@
 let
   perlWithModules = pkgs.perl.withPackages (pp:
     with pkgs.perlPackages; [
-      pkgs.test
       mod_perl2
       CGI
       TieIxHash
@@ -55,7 +54,7 @@ let
       # Locally defined Dependencies
       XMLEncoding
       GraphicsColor
-      # BarcodeZBar # Fails its test... Tests are disabled for now
+      BarcodeZBar # Fails its test... Tests are disabled for now
       experimental
       ExcelWriterXLSX
       MongoDB

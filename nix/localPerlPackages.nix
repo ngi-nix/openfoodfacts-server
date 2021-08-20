@@ -39,17 +39,18 @@ with perlPackages; rec {
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
-  BarcodeZBar = buildPerlPackage {
+
+  BarcodeZBar= buildPerlPackage {
     pname = "Barcode-ZBar";
     version = "0.04";
-    src = fetchurl {
-      url = "mirror://cpan/authors/id/S/SP/SPADIX/Barcode-ZBar-0.04.tar.gz";
-      sha256 =
-        "d57e1ad471b6a29fa4134650e6eec9eb834d42cbe8bf8f0608c67d6dd0f8f431";
-    };
-    patches = [ ./0001-version-patch.patch ];
-    doCheck = false;
-    buildInputs = [ pkg-config TestMore ExtUtilsMakeMaker TestHarness ];
+    src = "${zbar.src}/perl";
+    postPatch = ''
+      substituteInPlace Makefile.PL --replace "-lzbar" "-L${zbar.lib}/lib -lzbar"
+      rm t/Processor.t
+      ls t
+    '';
+    doCheck = true;
+    buildInputs = [ TestPodCoverage TestPod DevelChecklib TestMore ExtUtilsMakeMaker ];
     propagatedBuildInputs = [ zbar PerlMagick ];
     meta = {
       homepage = "https://github.com/mchehab/zbar";
@@ -57,6 +58,7 @@ with perlPackages; rec {
       license = with lib.licenses; [ gpl2Plus ];
     };
   };
+
   experimental = buildPerlPackage {
     pname = "experimental";
     version = "0.025";

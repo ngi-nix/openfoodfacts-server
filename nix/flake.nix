@@ -105,6 +105,7 @@
         pkgs = nixpkgsFor.${system};
         modules = [
           self.nixosModules.server-backend
+
           ({ pkgs, ... }: {
             boot.isContainer = true;
 
