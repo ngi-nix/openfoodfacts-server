@@ -4,7 +4,8 @@
 
   # Nixpkgs / NixOS version to use.
   inputs.nixpkgs.url = "nixpkgs/nixos-21.05"; # PerlMagick Not Building
-  inputs.nixpkgs-ancient.url = "github:NixOS/nixpkgs?rev=12408341763b8f2f0f0a88001d9650313f6371d5";
+  inputs.nixpkgs-ancient.url =
+    "github:NixOS/nixpkgs?rev=12408341763b8f2f0f0a88001d9650313f6371d5";
   inputs.nixpkgs-ancient.flake = false;
   inputs.unstable.url =
     "nixpkgs/nixos-unstable"; # Perl is no longer split so Perl530 becomes Perl, modPerl package is broken
@@ -15,7 +16,13 @@
     flake = false;
   };
 
-  outputs = { self, nixpkgs, nixpkgs-ancient, unstable, openfoodfacts-server-src }:
+  inputs.zbar-src = {
+    url = "github:mchehab/zbar";
+    flake = false;
+  };
+
+  outputs =
+    { self, nixpkgs, nixpkgs-ancient, unstable, openfoodfacts-server-src, zbar-src }:
     let
       # Generate a user-friendly version numer.
       version = "0.0.1";
@@ -39,7 +46,11 @@
       # Nixpkgs overlays.
       overlays = {
         test = final: prev: {
-          test = final.callPackage ./test.nix { pkgs = final; pkgsAncient = import nixpkgs-ancient { system = final.system; }; };
+          test = final.callPackage ./test.nix {
+            pkgs = final;
+            pkgsAncient = import nixpkgs-ancient { system = final.system; };
+            src = "${zbar-src}/perl";
+          };
         };
 
         product-opener = final: prev: {
@@ -97,11 +108,13 @@
 
       nixosConfigurations.container = nixpkgs.lib.nixosSystem rec {
         system = "x86_64-linux";
-        specialArgs = { src = openfoodfacts-server-src; };
+        specialArgs = { src = openfoodfacts-server-src; inherit zbar-src; };
         pkgs = nixpkgsFor.${system};
         modules = [
           self.nixosModules.server-backend
           ({ pkgs, ... }: {
+            boot.isContainer = true;
+
             system.configurationRevision =
               nixpkgs.lib.mkIf (self ? rev) self.rev;
           })

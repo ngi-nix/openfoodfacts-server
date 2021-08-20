@@ -1,7 +1,8 @@
-{ config, lib, pkgs, src, ... }:
+{ config, lib, pkgs, src, zbar-src, ... }:
 let
   perlWithModules = pkgs.perl.withPackages (pp:
     with pkgs.perlPackages; [
+      pkgs.test
       mod_perl2
       CGI
       TieIxHash
@@ -20,7 +21,6 @@ let
       DigestMD5File
       TimeLocal
       TemplateToolkit
-      # AnyURIEscape # Wasnt working perhaps needs to be updated?
       URIEscapeXS
       URIFind
       MathRandomSecure
@@ -55,7 +55,7 @@ let
       # Locally defined Dependencies
       XMLEncoding
       GraphicsColor
-      BarcodeZBar # Fails its test... Tests are disabled for now
+      # BarcodeZBar # Fails its test... Tests are disabled for now
       experimental
       ExcelWriterXLSX
       MongoDB
@@ -82,14 +82,15 @@ let
 
 in {
 
-  boot.isContainer = true;
-
   # system.activationScripts.test =
   #   "${src}/docker/backend-dev/conf/po-foreground.sh";
   #
   # This is a rough copy of the above script for dirty testing
   #
   system.activationScripts.copy.text = ''
+    mkdir -p /opt/zbar
+    cp -r ${zbar-src}/. /opt/zbar
+
     mkdir -p /opt/product-opener
 
     # These should really be bind mounts
@@ -119,6 +120,12 @@ in {
   # Once these 2 are working then we are getting somewhere
   # perl -I/opt/product-opener/lib /opt/product-opener/scripts/build_lang.pl
   # perl -I/opt/product-opener/lib /opt/product-opener/lib/startup_apache2.pl
+  #
+  # To test a perl module is working and loaded:
+  # perl -e "use <Module>" ie perl -e "use Barcode::Zbar"
+  # Get list of all installed modules
+  # perl -MFile::Find=find -MFile::Spec::Functions -Tlwe 'find { wanted => sub { print canonpath $_ if /\.pm\z/ }, no_chdir => 1 }, @INC' > modules.txt
+  # https://theunixshell.blogspot.com/2012/12/check-for-installed-modules-in-perl.html
 
   networking = {
     hostName = "server"; # How does this function inside a container?
@@ -140,5 +147,6 @@ in {
     graphviz
     tesseract
     gnumeric
+    zbar
   ];
 }
