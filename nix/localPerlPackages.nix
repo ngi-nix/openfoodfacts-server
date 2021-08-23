@@ -1,5 +1,5 @@
 { buildPerlPackage, lib, pkg-config, fetchurl, perlPackages, which, zbar
-, imagemagick, tesseract }:
+, imagemagick, tesseract, graphviz, fontconfig }:
 
 with perlPackages; rec {
   XMLEncoding = buildPerlPackage {
@@ -40,7 +40,7 @@ with perlPackages; rec {
     };
   };
 
-  BarcodeZBar= buildPerlPackage {
+  BarcodeZBar = buildPerlPackage {
     pname = "Barcode-ZBar";
     version = "0.04";
     src = "${zbar.src}/perl";
@@ -50,7 +50,8 @@ with perlPackages; rec {
       ls t
     '';
     doCheck = true;
-    buildInputs = [ TestPodCoverage TestPod DevelChecklib TestMore ExtUtilsMakeMaker ];
+    buildInputs =
+      [ TestPodCoverage TestPod DevelChecklib TestMore ExtUtilsMakeMaker ];
     propagatedBuildInputs = [ zbar PerlMagick ];
     meta = {
       homepage = "https://github.com/mchehab/zbar";
@@ -733,5 +734,73 @@ with perlPackages; rec {
       homepage = "http://testanything.org/";
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
+  };
+  GraphViz2 = buildPerlPackage {
+    pname = "GraphViz2";
+    version = "2.66";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/E/ET/ETJ/GraphViz2-2.66.tar.gz";
+      sha256 =
+        "049d8a7d3b3bcbe30d9e05fb53afe8b10c6a8f122571394e9e087c725362e69c";
+    };
+    buildInputs = [ TestSnapshot fontconfig ];
+    propagatedBuildInputs =
+      [ graphviz DataSectionSimple FileWhich Graph IPCRun3 Moo TypeTiny ];
+    meta = {
+      description = "A wrapper for AT&T's Graphviz";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+  DataSectionSimple = buildPerlPackage {
+    pname = "Data-Section-Simple";
+    version = "0.07";
+    src = fetchurl {
+      url =
+        "mirror://cpan/authors/id/M/MI/MIYAGAWA/Data-Section-Simple-0.07.tar.gz";
+      sha256 =
+        "0b3035ffdb909aa1f7ded6b608fa9d894421c82c097d51e7171170d67579a9cb";
+    };
+    buildInputs = [ TestRequires ];
+    meta = {
+      homepage = "https://github.com/miyagawa/Data-Section-Simple";
+      description = "Read data from __DATA__";
+      license = with lib.licenses; [ artistic1 gpl1Plus ];
+    };
+  };
+  TestSnapshot = buildPerlPackage {
+    pname = "Test-Snapshot";
+    version = "0.06";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/E/ET/ETJ/Test-Snapshot-0.06.tar.gz";
+      sha256 =
+        "f4dd7a9a55baa2247540ae34210cd05a04f9d1061befec97a1c90eda95bfae45";
+    };
+    buildInputs = [ CaptureTiny ];
+    propagatedBuildInputs = [ TextDiff ];
+    meta = {
+      description = "Test against data stored in automatically-named file";
+      license = lib.licenses.artistic2;
+    };
+  };
+  Graph = buildPerlPackage {
+    pname = "Graph";
+    version = "0.9722";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/E/ET/ETJ/Graph-0.9722.tar.gz";
+      sha256 =
+        "c113633833f3a1bef8fa8eb96680be36d00e41ef404bddd7fc0bb98703e28d4d";
+    };
+    propagatedBuildInputs = [ HeapFibonacci SetObject ];
+    meta = { license = with lib.licenses; [ artistic1 gpl1Plus ]; };
+  };
+  Heap = buildPerlPackage {
+    pname = "Heap";
+    version = "0.80";
+    src = fetchurl {
+      url = "mirror://cpan/authors/id/J/JM/JMM/Heap-0.80.tar.gz";
+      sha256 =
+        "ccda29f3c93176ad0fdfff4dd6f5e4ac90b370cba4b028386b7343bf64139bde";
+    };
+    meta = { };
   };
 }

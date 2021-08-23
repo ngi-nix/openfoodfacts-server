@@ -3,7 +3,7 @@ let
   perlWithModules = pkgs.perl.withPackages (pp:
     with pkgs.perlPackages; [
       mod_perl2
-      GraphViz
+      GraphViz2
       CGI
       TieIxHash
       LWPUserAgent
