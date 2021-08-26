@@ -99,7 +99,8 @@ in {
   };
 
   config = mkIf cfg.enable {
-    system.build.perl = perlWithModules;
+    # For debugging to test whether perl is building
+    # system.build.perl = perlWithModules;
     # Based on the dockerfile `docker/backend/Dockerfile`
     # system.activationScripts.test =
     #   "${src}/docker/backend-dev/conf/po-foreground.sh";
@@ -111,6 +112,8 @@ in {
 
       # These should really be bind mounts
       cp -r ${src}/. /opt/product-opener
+
+      patchShebangs /opt/product-opener/lib/startup_apache.pl
 
       mkdir -p /mnt/podata/products /mnt/podata/logs /mnt/podata/users /mnt/podata/po /mnt/podata/orgs
       ln -sf /opt/product-opener/lang /mnt/podata/lang
@@ -142,8 +145,16 @@ in {
     # To test a perl module is working and loaded:
     # perl -e "use <Module>" ie perl -e "use Barcode::Zbar"
     # Get list of all installed modules
-    # perl -MFile::Find=find -MFile::Spec::Functions -Tlwe 'find { wanted => sub { print canonpath $_ if /\.pm\z/ }, no_chdir => 1 }, @INC' > modules.txt
+    # perl -MFile::Find=find -MFile::Spec::Functions -Tlwe 'find { wanted => sub { print canonpath $_ if /\.pm\z/ }, no_chdir => 1 }, @INC' > /var/log/httpd/modules.txt
     # https://theunixshell.blogspot.com/2012/12/check-for-installed-modules-in-perl.html
+    # To show the @INC
+    # perl -e "print \"@INC\""
+    #
+    # The new problem is that the perl that apache httpd is using to run the perl code is different
+    # from the one in the environment and therefore does have access to perl packages
+    # included on the @INC file throught PerlWithModules
+    # This seems like a job for patchShebangs which therefor means I need to put all this
+    # into a derivation
 
     networking = {
       useDHCP = false;
@@ -153,13 +164,17 @@ in {
     # Enable a web server.
     services.httpd = {
       enable = true;
+      package = pkgs.apacheMod;
       enablePerl = true;
+      # perlPackage = perlWithModules;
       adminAddr = "test@test.com";
       extraConfig =
-        builtins.readFile "${src}/docker/backend-dev/conf/apache.conf";
+        (''
+          PerlSwitches -I${pkgs.product-opener}
+          PerlSwitches -I${perlWithModules}/lib/perl5/site_perl
+          '' + (builtins.readFile "${src}/docker/backend-dev/conf/apache.conf"));
     };
 
-    environment.variables.PERL5LIB = "${pkgs.product-opener}";
     environment.systemPackages = with pkgs; [
       perlWithModules
       imagemagick
