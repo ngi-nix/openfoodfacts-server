@@ -127,14 +127,6 @@
           '';
         };
 
-        apacheMod = let perl' = perlWithModules final;
-        in prev.apacheHttpd.overrideAttrs (old: {
-          buildInputs = old.buildInputs ++ [ perl' ];
-        });
-
-        # apacheHttpdPackages = let perl' = perlWithModules final;
-        #  in (prev.apacheHttpdPackages.mod_perl.override { perl = perl'; });
-
         perlPackages = prev.perlPackages.override {
           overrides = pkgs: {
             # JSON-Create requires JSONParse >= 0.60; nixpkgs version = 0.57

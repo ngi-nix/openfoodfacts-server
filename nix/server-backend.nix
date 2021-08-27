@@ -100,7 +100,8 @@ in {
 
   config = mkIf cfg.enable {
     # For debugging to test whether perl is building
-    # system.build.perl = perlWithModules;
+    # nix build .#nixosConfigurations.container.config.system.build.perl
+    system.build.perl = perlWithModules;
     # Based on the dockerfile `docker/backend/Dockerfile`
     # system.activationScripts.test =
     #   "${src}/docker/backend-dev/conf/po-foreground.sh";
@@ -164,7 +165,6 @@ in {
     # Enable a web server.
     services.httpd = {
       enable = true;
-      package = pkgs.apacheMod;
       enablePerl = true;
       # perlPackage = perlWithModules;
       adminAddr = "test@test.com";
@@ -175,12 +175,9 @@ in {
           '' + (builtins.readFile "${src}/docker/backend-dev/conf/apache.conf"));
     };
 
+    environment.variables.PERL5LIB = "${pkgs.product-opener}";
     environment.systemPackages = with pkgs; [
       perlWithModules
-      imagemagick
-      graphviz
-      tesseract
-      gnumeric
     ];
   };
 }

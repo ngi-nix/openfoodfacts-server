@@ -1,5 +1,5 @@
 { buildPerlPackage, lib, pkg-config, fetchurl, perlPackages, which, zbar
-, imagemagick, tesseract, graphviz }:
+, imagemagick, tesseract, graphviz, pkgs }:
 
 with perlPackages; rec {
   XMLEncoding = buildPerlPackage {
@@ -156,6 +156,7 @@ with perlPackages; rec {
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
+
   ImageOCRTesseract = buildPerlPackage {
     pname = "Image-OCR-Tesseract";
     version = "1.26";
@@ -165,20 +166,24 @@ with perlPackages; rec {
       sha256 =
         "98d904266a7062f09c9b46f77c4e94529e1fe99339e3f83fda1f92013f007cea";
     };
-    nativeBuildInputs = [ which ];
-    propagatedBuildInputs = [
-      FileFindRule
-      FileWhich
-      LEOCHARRECLI
-      StringShellQuote
-      tesseract
-      imagemagick
-    ];
+    nativeBuildInputs =
+      [ pkgs.which pkgs.makeWrapper pkgs.tesseract pkgs.imagemagick ];
+    propagatedBuildInputs =
+      [ FileFindRule FileWhich LEOCHARRECLI StringShellQuote ];
+    postPatch = ''
+      substituteInPlace lib/Image/OCR/Tesseract.pm \
+        --replace "which('tesseract')" "\"${pkgs.tesseract}/bin/tesseract\"" \
+        --replace "which('convert')" "\"${pkgs.imagemagick}/bin/convert"\"
+    '';
+    postInstall = ''
+      wrapProgram $out/bin/ocr --prefix PATH : ${lib.makeBinPath [ pkgs.tesseract pkgs.imagemagick ]}
+    '';
     meta = {
       description = "Read an image with tesseract ocr and get output";
       license = with lib.licenses; [ artistic1 gpl1Plus ];
     };
   };
+
   CLDRNumber = buildPerlModule {
     pname = "CLDR-Number";
     version = "0.19";
