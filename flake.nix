@@ -179,5 +179,28 @@
           })
         ];
       };
+      docker = {
+        runnable = let
+          pkgs = nixpkgsFor.x86_64-linux;
+          perlWithMods = perlWithModules { inherit pkgs; };
+          apachePort = "80";
+          inherit (pkgs) dockerTools apacheHttpd writeText gnumeric;
+        in dockerTools.buildImage {
+          name = "runnable";
+          tag = "latest";
+          contents = [ apacheHttpd gnumeric ];
+          runAsRoot = ''
+            mkdir -p /opt/product-opener
+            cp -r ${openfoodfacts-server-src}/* /opt/product-opener/
+          '';
+          config = {
+            WorkingDir = "/opt/product-opener";
+            ExposedPorts = { "${apachePort}/tcp" = { }; };
+            Env = [
+              ''
+                PERL5LIB="${openfoodfacts-server-src}/lib/:${perlWithMods}/lib/perl5/site_perl"''
+            ];
+          };
+        };
     };
 }
