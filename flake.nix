@@ -149,7 +149,7 @@
 
       # Provide some binary packages for selected system types.
       packages = forAllSystems
-        (system: { inherit (nixpkgsFor.${system}) product-opener apacheMod; });
+        (system: { inherit (nixpkgsFor.${system}) product-opener; });
 
       devShell = forAllSystems (system:
         let inherit (nixpkgsFor.${system}) mkShell nix-generate-from-cpan;
