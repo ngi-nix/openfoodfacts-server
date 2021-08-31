@@ -202,5 +202,15 @@
             ];
           };
         };
+        debug = let
+          pkgs = nixpkgsFor.x86_64-linux;
+          inherit (pkgs) dockerTools bashInteractive coreutils;
+        in dockerTools.buildLayeredImage {
+          name = "debug";
+          tag = "latest";
+          contents = [ bashInteractive coreutils ];
+          fromImage = self.docker.runnable;
+        };
+      };
     };
 }
