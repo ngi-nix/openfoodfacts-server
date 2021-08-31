@@ -31,9 +31,9 @@
           overlays = [ self.overlay ];
         });
 
-      perlWithModules = pkgs:
-        pkgs.perl.withPackages (pp:
-          with pkgs.perlPackages; [
+      perlWithModules = { pkgs, test ? false, develop ? false }:
+        let
+          base = with pkgs.perlPackages; [
             mod_perl2
             GraphViz2 # Tests are failing but module is building correctly
             CGI
@@ -97,23 +97,27 @@
             ActionCircuitBreaker
             ActionRetry
             LocaleMaketextLexiconGetcontext
-
-            ### Test ###
+          ];
+          testMods = with pkgs.perlPackages; [
             TestSimple13
             TestNumberDelta
             LogAnyAdapterTAP
+          ];
 
-            ### Develop ###
+          developMods = with pkgs.perlPackages; [
             PerlCritic
             TermReadLineGnu
             ApacheDB
-          ]);
+          ];
+        in pkgs.perl.withPackages (pp:
+          base ++ (if test then testMods else [ ])
+          ++ (if develop then developMods else [ ]));
 
     in {
       # Nixpkgs overlays.
       overlay = final: prev: {
 
-        product-opener = let perl = perlWithModules final;
+        product-opener = let perl = perlWithModules { pkgs = final; };
         in final.stdenv.mkDerivation {
           name = "product-opener";
           src = self;
