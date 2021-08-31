@@ -179,6 +179,20 @@
           })
         ];
       };
+
+      defaultApp = forAllSystems (system:
+        let pkgs = nixpkgsFor.${system};
+        in {
+          type = "app";
+          program = "${pkgs.writeShellScript "load-images" ''
+            IMAGES="${builtins.toString (builtins.attrValues self.docker)}"
+            for image in $IMAGES
+            do
+              docker load < $image
+            done
+          ''}";
+        });
+
       docker = {
         runnable = let
           pkgs = nixpkgsFor.x86_64-linux;
