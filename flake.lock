@@ -15,9 +15,26 @@
         "type": "indirect"
       }
     },
+    "openfoodfacts-server-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1627899958,
+        "narHash": "sha256-hTO3LZ1DUdePOsk+/zWtOIyltDp0fY/u3iLs1pN3PVg=",
+        "owner": "ngi-nix",
+        "repo": "openfoodfacts-server",
+        "rev": "1486b043e164424f7a549a3428f57a627fc6b3b0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ngi-nix",
+        "repo": "openfoodfacts-server",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "openfoodfacts-server-src": "openfoodfacts-server-src"
       }
     }
   },

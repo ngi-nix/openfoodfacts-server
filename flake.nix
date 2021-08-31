@@ -6,12 +6,16 @@
   inputs.nixpkgs.url = "nixpkgs/nixos-21.05"; # PerlMagick Not Building
   # inputs.nixpkgs.url = "path:/home/thomassdk/summer-of-nix/nixpkgs";
 
-  outputs = { self, nixpkgs }:
-    let
-      openfoodfacts-server-src = self;
+  inputs.openfoodfacts-server-src = {
+    url = "github:ngi-nix/openfoodfacts-server";
+    flake = false;
+  };
 
+  outputs = { self, nixpkgs, openfoodfacts-server-src }:
+    let
       # Generate a user-friendly version numer.
-      version = builtins.substring 0 8 self.lastModifiedDate;
+      version =
+        builtins.substring 0 8 openfoodfacts-server-src.lastModifiedDate;
 
       # System types to support.
       supportedSystems = [ "x86_64-linux" ];
