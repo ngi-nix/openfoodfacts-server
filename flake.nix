@@ -107,12 +107,12 @@
           developMods = with pkgs.perlPackages; [
             PerlCritic
             TermReadLineGnu
+            TermReadKey
             ApacheDB
           ];
         in pkgs.perl.withPackages (pp:
           base ++ (if test then testMods else [ ])
           ++ (if develop then developMods else [ ]));
-
     in {
       # Nixpkgs overlays.
       overlay = final: prev: {
