@@ -129,6 +129,17 @@
             }));
           };
         } // final.callPackage ./nix/localPerlPackages.nix { };
+
+        # coched from https://github.com/nix-community/docker-nixpkgs/blob/master/overlay.nix
+        gitReallyMinimal = (final.git.override {
+          perlSupport = false;
+          pythonSupport = false;
+          withManual = false;
+          withpcre2 = false;
+        }).overrideAttrs (_: {
+          # installCheck is broken when perl is disabled
+          doInstallCheck = false;
+        });
       };
 
       devShell = forAllSystems (system:
@@ -154,7 +165,9 @@
       dockerImages = let
         pkgs = nixpkgsFor.x86_64-linux;
         apachePort = "80";
-        inherit (pkgs) apacheHttpd busybox cacert dockerTools git gnumeric iproute2 lsb-release procps release wget;
+        inherit (pkgs)
+          apacheHttpd busybox cacert dockerTools gitReallyMinimal gnumeric
+          iproute2 lsb-release procps release wget;
         perlRunnable = perlWithModules { inherit pkgs; };
         perlDebug = perlWithModules {
           inherit pkgs;
@@ -198,10 +211,10 @@
           name = "vscode";
           tag = "latest";
           fromImage = self.dockerImages.debug;
-          contents = [ git iproute2 procps lsb-release ];
-          config = {
+          contents = [ gitReallyMinimal iproute2 procps lsb-release ];
+          # config = {
 
-          } // config;
+          # } // config;
         };
       };
     };
