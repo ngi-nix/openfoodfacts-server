@@ -210,6 +210,10 @@
         vscode = dockerTools.buildLayeredImage {
           name = "vscode";
           tag = "latest";
+          # NOTE: Error: usedLayers 101 layers to store 'fromImage' and 'extraCommands',
+          # but only maxLayers=100 were allowed.
+          # At least 1 layer is required to store contents.
+          maxLayers = 102;
           fromImage = self.dockerImages.debug;
           contents = [ gitReallyMinimal iproute2 procps lsb-release ];
           # config = {
