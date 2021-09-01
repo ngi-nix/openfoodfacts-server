@@ -199,6 +199,13 @@
           tag = "latest";
           contents = [ apacheHttpd busybox cacert gnumeric wget ];
           runAsRoot = ''
+            #!${pkgs.runtimeShell}
+            touch /etc/passwd
+            ${dockerTools.shadowSetup}
+
+            groupadd -r www-run
+            useradd -r -g www-run www-run
+
             mkdir -p /opt/product-opener
             cp -r ${openfoodfacts-server-src}/* /opt/product-opener/
           '';
