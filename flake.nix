@@ -154,7 +154,7 @@
       dockerImages = let
         pkgs = nixpkgsFor.x86_64-linux;
         apachePort = "80";
-        inherit (pkgs) apacheHttpd busybox cacert dockerTools gnumeric wget;
+        inherit (pkgs) apacheHttpd busybox cacert dockerTools git gnumeric iproute2 lsb-release procps release wget;
         perlRunnable = perlWithModules { inherit pkgs; };
         perlDebug = perlWithModules {
           inherit pkgs;
@@ -190,6 +190,18 @@
           fromImage = self.dockerImages.base;
           contents = [ perlDebug ];
           inherit config;
+        };
+
+        # TODO: Base off of this:
+        # https://github.com/nix-community/docker-nixpkgs/blob/master/images/devcontainer/default.nix
+        vscode = dockerTools.buildLayeredImage {
+          name = "vscode";
+          tag = "latest";
+          fromImage = self.dockerImages.debug;
+          contents = [ git iproute2 procps lsb-release ];
+          config = {
+
+          } // config;
         };
       };
     };
