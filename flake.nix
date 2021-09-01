@@ -3,8 +3,7 @@
     "Open Food Facts is a food products database made by everyone, for everyone";
 
   # Nixpkgs / NixOS version to use.
-  inputs.nixpkgs.url = "nixpkgs/nixos-21.05"; # PerlMagick Not Building
-  # inputs.nixpkgs.url = "path:/home/thomassdk/summer-of-nix/nixpkgs";
+  inputs.nixpkgs.url = "nixpkgs/nixos-21.05";
 
   inputs.openfoodfacts-server-src = {
     url = "github:ngi-nix/openfoodfacts-server";
@@ -116,25 +115,6 @@
     in {
       # Nixpkgs overlays.
       overlay = final: prev: {
-
-        product-opener = let perl = perlWithModules { pkgs = final; };
-        in final.stdenv.mkDerivation {
-          name = "product-opener";
-          src = self;
-          buildInputs = [ perl ];
-          installPhase = ''
-            mkdir -p $out/ProductOpener
-
-            cp lib/startup_apache2.pl $out
-            cp scripts/build_lang.pl $out
-            cp docker/backend-dev/scripts/* $out
-            patchShebangs $out/
-
-            cp lib/ProductOpener/* $out/ProductOpener
-            cp docker/backend-dev/conf/Config* $out/ProductOpener
-          '';
-        };
-
         perlPackages = prev.perlPackages.override {
           overrides = pkgs: {
             # JSON-Create requires JSONParse >= 0.60; nixpkgs version = 0.57
@@ -151,34 +131,9 @@
         } // final.callPackage ./nix/localPerlPackages.nix { };
       };
 
-      # Provide some binary packages for selected system types.
-      packages = forAllSystems
-        (system: { inherit (nixpkgsFor.${system}) product-opener; });
-
       devShell = forAllSystems (system:
         let inherit (nixpkgsFor.${system}) mkShell nix-generate-from-cpan;
         in mkShell { buildInputs = [ nix-generate-from-cpan ]; });
-
-      # A NixOS module, if applicable (e.g. if the package provides a system service).
-      nixosModules = { server-backend = import ./nix/server-backend.nix; };
-
-      nixosConfigurations.container = nixpkgs.lib.nixosSystem rec {
-        system = "x86_64-linux";
-        specialArgs = { src = openfoodfacts-server-src; };
-        pkgs = nixpkgsFor.${system};
-        modules = [
-          self.nixosModules.server-backend
-
-          ({ pkgs, ... }: {
-            boot.isContainer = true;
-
-            system.configurationRevision =
-              nixpkgs.lib.mkIf (self ? rev) self.rev;
-
-            services.openfoodfacts.enable = true;
-          })
-        ];
-      };
 
       defaultApp = forAllSystems (system:
         let pkgs = nixpkgsFor.${system};
