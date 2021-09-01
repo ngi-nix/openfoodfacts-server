@@ -185,45 +185,56 @@
         in {
           type = "app";
           program = "${pkgs.writeShellScript "load-images" ''
-            IMAGES="${builtins.toString (builtins.attrValues self.docker)}"
+            IMAGES="${builtins.toString (builtins.attrValues self.dockerImages)}"
             for image in $IMAGES
             do
               docker load < $image
             done
+
+            # Put this behind a flag?
+            docker system prune -f
           ''}";
         });
 
-      docker = {
-        runnable = let
-          pkgs = nixpkgsFor.x86_64-linux;
-          perlWithMods = perlWithModules { inherit pkgs; };
-          apachePort = "80";
-          inherit (pkgs) dockerTools apacheHttpd writeText gnumeric;
-        in dockerTools.buildImage {
-          name = "runnable";
+      dockerImages = let
+        pkgs = nixpkgsFor.x86_64-linux;
+        apachePort = "80";
+        inherit (pkgs) apacheHttpd busybox cacert dockerTools gnumeric wget;
+        perlRunnable = perlWithModules { inherit pkgs; };
+        perlDebug = perlWithModules {
+          inherit pkgs;
+          test = true;
+          develop = true;
+        };
+        config = {
+          WorkingDir = "/opt/product-opener";
+          ExposedPorts = { "${apachePort}/tcp" = { }; };
+        };
+      in {
+        base = dockerTools.buildImage {
+          name = "base";
           tag = "latest";
-          contents = [ apacheHttpd gnumeric ];
+          contents = [ apacheHttpd busybox cacert gnumeric wget ];
           runAsRoot = ''
             mkdir -p /opt/product-opener
             cp -r ${openfoodfacts-server-src}/* /opt/product-opener/
           '';
-          config = {
-            WorkingDir = "/opt/product-opener";
-            ExposedPorts = { "${apachePort}/tcp" = { }; };
-            Env = [
-              ''
-                PERL5LIB="${openfoodfacts-server-src}/lib/:${perlWithMods}/lib/perl5/site_perl"''
-            ];
-          };
         };
-        debug = let
-          pkgs = nixpkgsFor.x86_64-linux;
-          inherit (pkgs) dockerTools bashInteractive coreutils;
-        in dockerTools.buildLayeredImage {
+
+        runnable = dockerTools.buildLayeredImage {
+          fromImage = self.dockerImages.base;
+          name = "runnable";
+          tag = "latest";
+          contents = [ perlRunnable ];
+          inherit config;
+        };
+
+        debug = dockerTools.buildLayeredImage {
           name = "debug";
           tag = "latest";
-          contents = [ bashInteractive coreutils ];
-          fromImage = self.docker.runnable;
+          fromImage = self.dockerImages.base;
+          contents = [ perlDebug ];
+          inherit config;
         };
       };
     };
