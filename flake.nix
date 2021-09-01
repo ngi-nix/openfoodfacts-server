@@ -115,6 +115,7 @@
     in {
       # Nixpkgs overlays.
       overlay = final: prev: {
+
         perlPackages = prev.perlPackages.override {
           overrides = pkgs: {
             # JSON-Create requires JSONParse >= 0.60; nixpkgs version = 0.57
@@ -146,12 +147,16 @@
         let inherit (nixpkgsFor.${system}) mkShell nix-generate-from-cpan;
         in mkShell { buildInputs = [ nix-generate-from-cpan ]; });
 
-      defaultApp = forAllSystems (system:
-        let pkgs = nixpkgsFor.${system};
+      defaultApp = forAllSystems (system: self.apps.${system}.runProject);
+
+      apps = forAllSystems (system: {
+        loadImages = let pkgs = nixpkgsFor.${system};
         in {
           type = "app";
-          program = "${pkgs.writeShellScript "load-images" ''
-            IMAGES="${builtins.toString (builtins.attrValues self.dockerImages)}"
+          program = "${pkgs.writeShellScript "load images" ''
+            IMAGES="${
+              builtins.toString (builtins.attrValues self.dockerImages)
+            }"
             for image in $IMAGES
             do
               docker load < $image
@@ -160,7 +165,16 @@
             # Put this behind a flag?
             docker system prune -f
           ''}";
-        });
+        };
+
+        runProject = let pkgs = nixpkgsFor.${system};
+        in {
+          type = "app";
+          program = "${pkgs.writeShellScript "project up" ''
+            # run docker compose up
+          ''}";
+        };
+      });
 
       dockerImages = let
         pkgs = nixpkgsFor.x86_64-linux;
