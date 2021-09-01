@@ -171,7 +171,8 @@
         in {
           type = "app";
           program = "${pkgs.writeShellScript "project up" ''
-            # run docker compose up
+            # need to patch the docker-compose files to use the dockerImage outputs
+            # and then run docker/start_dev.sh
           ''}";
         };
       });
