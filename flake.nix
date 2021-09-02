@@ -131,7 +131,7 @@
           };
         } // final.callPackage ./nix/localPerlPackages.nix { };
 
-        # coched from https://github.com/nix-community/docker-nixpkgs/blob/master/overlay.nix
+        # taken from https://github.com/nix-community/docker-nixpkgs/blob/master/overlay.nix
         gitReallyMinimal = (final.git.override {
           perlSupport = false;
           pythonSupport = false;
@@ -163,6 +163,7 @@
             done
 
             # Put this behind a flag?
+            # Need this to be more specific
             docker system prune -f
           ''}";
         };
@@ -203,10 +204,11 @@
             touch /etc/passwd
             ${dockerTools.shadowSetup}
 
-            groupadd -r www-run
-            useradd -r -g www-run www-run
+            adduser -H -D www-run
+            addgroup www-run www-run
 
             mkdir -p /opt/product-opener
+            # Should this be a symlink?
             cp -r ${openfoodfacts-server-src}/* /opt/product-opener/
           '';
         };
