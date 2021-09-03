@@ -102,7 +102,6 @@
             TestNumberDelta
             LogAnyAdapterTAP
           ];
-
           developMods = with pkgs.perlPackages; [
             PerlCritic
             TermReadLineGnu
@@ -145,7 +144,7 @@
 
       devShell = forAllSystems (system:
         let
-          pkgs = (nixpkgsFor.${system});
+          pkgs = nixpkgsFor.${system};
           perl = perlWithModules {
             inherit pkgs;
             test = true;
@@ -164,64 +163,73 @@
           # node-gyp requires python make and a c/c++ compiler
           inherit (pkgs)
             writeShellScript nodejs nodePackages python39 gnumake gcc;
+          docker = "${pkgs.docker}/bin/docker";
+          docker-compose = "${pkgs.docker-compose}/bin/docker-compose";
           npm = "${nodePackages.npm}/bin/npm";
           nodeScript = name: commands: {
             type = "app";
             program = "${writeShellScript "${name}" ''
               export PATH=$PATH:${nodejs}/bin:${nodePackages.npm}/bin:${python39}/bin:${gnumake}/bin:${gcc}/bin
               ${npm} install
+              # only need the gcc etc. for the inital install
+              # export PATH=$PATH:${nodejs}/bin:${nodePackages.npm}/bin
               ${commands}
             ''}";
           };
         in {
-          runProject = {
+
+          start_dev = {
             type = "app";
-            program = "${writeShellScript "project up" ''
-              # need to patch the docker-compose files to use the dockerImage outputs
-              # and then run docker/start_dev.sh with the docker-compose patched to ${pkgs.docker-compose}
-              # will this work with permissions?
+            program = "${writeShellScript "build dev environment" ''
+              ${docker-compose} -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
             ''}";
           };
 
-          loadImages = {
+          build_dev = {
             type = "app";
             program = "${writeShellScript "load images" ''
               IMAGES="${
                 builtins.toString (builtins.attrValues self.dockerImages)
               }"
-              for image in $IMAGES
-              do
-                ${pkgs.docker} load < $image
-              done
 
               # Put this behind a flag?
               # Need this to be more specific
-              ${pkgs.docker} system prune -f
+              # ${docker} system prune -f
+
+              for image in $IMAGES
+              do
+                ${docker} load < $image
+              done
+
             ''}";
           };
 
           # Need to restrict this to just the docker assets related to the project
-          deleteAllDocker = {
+          clean_docker = {
             type = "app";
             program = "${writeShellScript "remove all Docker assets" ''
-              ${pkgs.docker-compose}/bin/docker-compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml down
-              ${pkgs.docker}/bin/docker container prune -f
-              ${pkgs.docker}/bin/docker volume prune -f
-              ${pkgs.docker}/bin/docker rmi $(docker images -q) -f
+              ${docker-compose} -f docker/docker-compose.yml -f docker/docker-compose.dev.yml down
+              ${docker} container prune -f
+              ${docker} volume prune -f
+              ${docker} rmi $(docker images -q) -f
             ''}";
           };
 
-          buildFrontEnd = nodeScript "Build FrontEnd Assets" "${npm} run build";
+          # This needs to go into a derviation that builds the assets and then
+          # COPIES them over to the respective folders in the repo
+          # Thus allowing the `watch_npm` script to function
+          # Am I right in thinking that
+          build_npm = nodeScript "Build FrontEnd Assets" "${npm} run build";
 
-          watchFrontEnd =
+          watch_npm =
             nodeScript "Watch FrontEnd Assets" "${npm} run build:watch";
 
         });
 
       dockerImages = let
         pkgs = nixpkgsFor.x86_64-linux;
-        tag = "latest";
         inherit (pkgs) dockerTools;
+        tag = null;
         config = { WorkingDir = "/opt/product-opener"; };
       in {
         backend-base =
@@ -234,15 +242,19 @@
               #!${pkgs.runtimeShell}
               ${dockerTools.shadowSetup}
 
-              adduser -H -D www-data
-              addgroup www-data www-data
+              adduser -H -D daemon
+              addgroup daemon daemon
 
               # src uses apache2ctl in po-foreground.sh
               # TODO: Patch
               ln -s /bin/apachectl /bin/apache2ctl
 
               mkdir -p /etc/httpd
-              ln -s ${apacheHttpd}/conf/httpd.conf /etc/httpd/
+              cp -s ${apacheHttpd}/conf/httpd.conf /etc/httpd/
+              # sed -i 's|daemon|www-data|' /etc/httpd/httpd.conf
+
+              mkdir -p /var/log/apache2
+              mkdir -p /var/log/httpd
 
               mkdir -p /opt/product-opener
               cp -r ${self}/* /opt/product-opener/
@@ -290,12 +302,35 @@
 
         # Is this necessary of should is it better to use something like hocker?
         # https://github.com/awakesecurity/hocker
+        # Although it would be necessary to copy in the contents of the built html folder
+        # from the app... which leads to the suggesstion that it should become a derivation
         frontend = let inherit (pkgs) nginx;
         in dockerTools.buildImage {
           name = "frontend";
           inherit tag;
           contents = [ nginx ];
+            runAsRoot = ''
+              #!${pkgs.runtimeShell}
+              # copy built html into /opt/product-opener/html
+            '';
         };
+      };
+
+      nixosConfigurations.container = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ({ pkgs, ... }: {
+            boot.isContainer = true;
+
+            networking.useDHCP = false;
+            networking.firewall.allowedTCPPorts = [ 80 ];
+
+            services.httpd = {
+              enable = true;
+              adminAddr = "morty@example.org";
+            };
+          })
+        ];
       };
     };
 }
