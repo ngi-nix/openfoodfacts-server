@@ -144,8 +144,17 @@
       };
 
       devShell = forAllSystems (system:
-        let inherit (nixpkgsFor.${system}) mkShell nix-generate-from-cpan;
-        in mkShell { buildInputs = [ nix-generate-from-cpan ]; });
+        let
+          pkgs = (nixpkgsFor.${system});
+          perl = perlWithModules {
+            inherit pkgs;
+            test = true;
+            develop = true;
+          };
+          inherit (pkgs) mkShell nix-generate-from-cpan nodejs nodePackages;
+        in mkShell {
+          buildInputs = [ nix-generate-from-cpan nodejs nodePackages.npm perl ];
+        });
 
       defaultApp = forAllSystems (system: self.apps.${system}.runProject);
 
