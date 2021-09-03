@@ -158,34 +158,52 @@
 
       defaultApp = forAllSystems (system: self.apps.${system}.runProject);
 
-      apps = forAllSystems (system: {
-        loadImages = let pkgs = nixpkgsFor.${system};
+      apps = forAllSystems (system:
+        let
+          pkgs = nixpkgsFor.${system};
+          inherit (pkgs) writeShellScript nodejs nodePackages;
+          npm = "${nodePackages.npm}/bin/npm";
+          nodeScript = name: commands: {
+            type = "app";
+            program = "${writeShellScript "${name}" ''
+              export PATH=$PATH:${pkgs.nodejs}/bin:${pkgs.nodePackages.npm}/bin
+              ${npm} install
+              ${commands}
+            ''}";
+          };
         in {
-          type = "app";
-          program = "${pkgs.writeShellScript "load images" ''
-            IMAGES="${
-              builtins.toString (builtins.attrValues self.dockerImages)
-            }"
-            for image in $IMAGES
-            do
-              docker load < $image
-            done
+          runProject = {
+            type = "app";
+            program = "${writeShellScript "project up" ''
+              # need to patch the docker-compose files to use the dockerImage outputs
+              # and then run docker/start_dev.sh with the docker-compose patched to ${pkgs.docker-compose}
+              # will this work with permissions?
+            ''}";
+          };
 
-            # Put this behind a flag?
-            # Need this to be more specific
-            docker system prune -f
-          ''}";
-        };
+          loadImages = {
+            type = "app";
+            program = "${writeShellScript "load images" ''
+              IMAGES="${
+                builtins.toString (builtins.attrValues self.dockerImages)
+              }"
+              for image in $IMAGES
+              do
+                ${pkgs.docker} load < $image
+              done
 
-        runProject = let pkgs = nixpkgsFor.${system};
-        in {
-          type = "app";
-          program = "${pkgs.writeShellScript "project up" ''
-            # need to patch the docker-compose files to use the dockerImage outputs
-            # and then run docker/start_dev.sh
-          ''}";
-        };
-      });
+              # Put this behind a flag?
+              # Need this to be more specific
+              ${pkgs.docker} system prune -f
+            ''}";
+          };
+
+          buildFrontEnd = nodeScript "Build FrontEnd Assets" "${npm} run build";
+
+          watchFrontEnd =
+            nodeScript "Watch FrontEnd Assets" "${npm} run build:watch";
+
+        });
 
       dockerImages = let
         pkgs = nixpkgsFor.x86_64-linux;
