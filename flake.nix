@@ -200,6 +200,17 @@
             ''}";
           };
 
+          # Need to restrict this to just the docker assets related to the project
+          deleteAllDocker = {
+            type = "app";
+            program = "${writeShellScript "remove all Docker assets" ''
+              ${pkgs.docker-compose}/bin/docker-compose -f docker/docker-compose.yml -f docker/docker-compose.dev.yml down
+              ${pkgs.docker}/bin/docker container prune -f
+              ${pkgs.docker}/bin/docker volume prune -f
+              ${pkgs.docker}/bin/docker rmi $(docker images -q) -f
+            ''}";
+          };
+
           buildFrontEnd = nodeScript "Build FrontEnd Assets" "${npm} run build";
 
           watchFrontEnd =
