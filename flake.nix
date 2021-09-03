@@ -207,69 +207,81 @@
 
       dockerImages = let
         pkgs = nixpkgsFor.x86_64-linux;
-        apachePort = "80";
-        inherit (pkgs)
-          apacheHttpd busybox cacert dockerTools gitReallyMinimal gnumeric
-          iproute2 lsb-release procps release wget;
-        perlRunnable = perlWithModules { inherit pkgs; };
-        perlDebug = perlWithModules {
-          inherit pkgs;
-          test = true;
-          develop = true;
-        };
-        config = {
-          WorkingDir = "/opt/product-opener";
-          ExposedPorts = { "${apachePort}/tcp" = { }; };
-        };
+        tag = "latest";
+        inherit (pkgs) dockerTools;
+        config = { WorkingDir = "/opt/product-opener"; };
       in {
-        base = dockerTools.buildImage {
-          name = "base";
-          tag = "latest";
-          contents = [ apacheHttpd busybox cacert gnumeric wget ];
-          runAsRoot = ''
-            #!${pkgs.runtimeShell}
-            touch /etc/passwd
-            ${dockerTools.shadowSetup}
+        backend-base =
+          let inherit (pkgs) apacheHttpd busybox cacert gnumeric wget;
+          in dockerTools.buildImage {
+            name = "backend-base";
+            inherit tag;
+            contents = [ apacheHttpd busybox cacert gnumeric wget ];
+            runAsRoot = ''
+              #!${pkgs.runtimeShell}
+              ${dockerTools.shadowSetup}
 
-            adduser -H -D www-run
-            addgroup www-run www-run
+              adduser -H -D www-data
+              addgroup www-data www-data
 
-            mkdir -p /opt/product-opener
-            # Should this be a symlink?
-            cp -r ${openfoodfacts-server-src}/* /opt/product-opener/
-          '';
-        };
+              # src uses apache2ctl in po-foreground.sh
+              # TODO: Patch
+              ln -s /bin/apachectl /bin/apache2ctl
 
-        runnable = dockerTools.buildLayeredImage {
-          fromImage = self.dockerImages.base;
+              mkdir -p /etc/httpd
+              ln -s ${apacheHttpd}/conf/httpd.conf /etc/httpd/
+
+              mkdir -p /opt/product-opener
+              cp -r ${self}/* /opt/product-opener/
+            '';
+          };
+
+        backend-runnable = let perl = perlWithModules { inherit pkgs; };
+        in dockerTools.buildLayeredImage {
+          fromImage = self.dockerImages.backend-base;
+          inherit tag config;
           name = "runnable";
-          tag = "latest";
-          contents = [ perlRunnable ];
-          inherit config;
+          contents = [ perl ];
         };
 
-        debug = dockerTools.buildLayeredImage {
-          name = "debug";
-          tag = "latest";
-          fromImage = self.dockerImages.base;
-          contents = [ perlDebug ];
-          inherit config;
+        backend-test = let
+          perl = perlWithModules {
+            inherit pkgs;
+            test = true;
+            develop = true;
+          };
+        in dockerTools.buildLayeredImage {
+          name = "test";
+          inherit tag config;
+          fromImage = self.dockerImages.backend-base;
+          contents = [ perl ];
         };
 
         # TODO: Base off of this:
         # https://github.com/nix-community/docker-nixpkgs/blob/master/images/devcontainer/default.nix
-        vscode = dockerTools.buildLayeredImage {
-          name = "vscode";
-          tag = "latest";
-          # NOTE: Error: usedLayers 101 layers to store 'fromImage' and 'extraCommands',
-          # but only maxLayers=100 were allowed.
-          # At least 1 layer is required to store contents.
-          maxLayers = 102;
-          fromImage = self.dockerImages.debug;
-          contents = [ gitReallyMinimal iproute2 procps lsb-release ];
-          # config = {
+        backend-vscode =
+          let inherit (pkgs) gitReallyMinimal iproute2 procps lsb-release;
+          in dockerTools.buildLayeredImage {
+            name = "vscode";
+            inherit tag config;
+            # NOTE: Error: usedLayers 101 layers to store 'fromImage' and 'extraCommands',
+            # but only maxLayers=100 were allowed.
+            # At least 1 layer is required to store contents.
+            maxLayers = 102;
+            fromImage = self.dockerImages.backend-test;
+            contents = [ gitReallyMinimal iproute2 procps lsb-release ];
+            # config = {
 
-          # } // config;
+            # } // config;
+          };
+
+        # Is this necessary of should is it better to use something like hocker?
+        # https://github.com/awakesecurity/hocker
+        frontend = let inherit (pkgs) nginx;
+        in dockerTools.buildImage {
+          name = "frontend";
+          inherit tag;
+          contents = [ nginx ];
         };
       };
     };
