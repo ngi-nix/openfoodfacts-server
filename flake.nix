@@ -161,12 +161,14 @@
       apps = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
-          inherit (pkgs) writeShellScript nodejs nodePackages;
+          # node-gyp requires python make and a c/c++ compiler
+          inherit (pkgs)
+            writeShellScript nodejs nodePackages python39 gnumake gcc;
           npm = "${nodePackages.npm}/bin/npm";
           nodeScript = name: commands: {
             type = "app";
             program = "${writeShellScript "${name}" ''
-              export PATH=$PATH:${pkgs.nodejs}/bin:${pkgs.nodePackages.npm}/bin
+              export PATH=$PATH:${nodejs}/bin:${nodePackages.npm}/bin:${python39}/bin:${gnumake}/bin:${gcc}/bin
               ${npm} install
               ${commands}
             ''}";
