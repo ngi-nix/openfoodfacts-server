@@ -195,21 +195,9 @@
       apps = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
-          inherit (pkgs)
-            writeShellScript nodejs nodePackages python39 gnumake gcc;
+          inherit (pkgs) writeShellScript;
           docker = "${pkgs.docker}/bin/docker";
           docker-compose = "${pkgs.docker-compose}/bin/docker-compose";
-          npm = "${nodePackages.npm}/bin/npm";
-          nodeScript = name: commands: {
-            type = "app";
-            program = "${writeShellScript "${name}" ''
-              export PATH=$PATH:${nodejs}/bin:${nodePackages.npm}/bin:${python39}/bin:${gnumake}/bin:${gcc}/bin
-              ${npm} install
-              # only need the gcc etc. for the inital install
-              # export PATH=$PATH:${nodejs}/bin:${nodePackages.npm}/bin
-              ${commands}
-            ''}";
-          };
         in {
 
           start_dev = {
@@ -248,16 +236,6 @@
               ${docker} rmi $(docker images -q) -f
             ''}";
           };
-
-          # This needs to go into a derviation that builds the assets and then
-          # COPIES them over to the respective folders in the repo
-          # Thus allowing the `watch_npm` script to function
-          # Am I right in thinking that
-          build_npm = nodeScript "Build FrontEnd Assets" "${npm} run build";
-
-          watch_npm =
-            nodeScript "Watch FrontEnd Assets" "${npm} run build:watch";
-
         });
 
       dockerImages = let
@@ -334,49 +312,6 @@
             # } // config;
           };
 
-        # Is this necessary of should is it better to use something like hocker?
-        # https://github.com/awakesecurity/hocker
-        # Although it would be necessary to copy in the contents of the built html folder
-        # from the app... which leads to the suggesstion that it should become a derivation
-        frontend = let inherit (pkgs) nginx;
-        in dockerTools.buildImage {
-          name = "frontend";
-          inherit tag;
-          contents = [ nginx ];
-          runAsRoot = ''
-            #!${pkgs.runtimeShell}
-            # copy built html into /opt/product-opener/html
-          '';
-        };
-      };
-
-      nixosConfigurations.base-container = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ({ pkgs, ... }: {
-            boot.isContainer = true;
-
-            networking.useDHCP = false;
-            networking.firewall.allowedTCPPorts = [ 80 ];
-          })
-        ];
-      };
-
-      nixosConfigurations.apache-container = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ({ pkgs, ... }: {
-            boot.isContainer = true;
-
-            networking.useDHCP = false;
-            networking.firewall.allowedTCPPorts = [ 80 ];
-
-            services.httpd = {
-              enable = true;
-              adminAddr = "morty@example.org";
-            };
-          })
-        ];
       };
 
     };
