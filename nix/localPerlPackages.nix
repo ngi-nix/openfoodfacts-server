@@ -47,7 +47,6 @@ with perlPackages; rec {
     postPatch = ''
       substituteInPlace Makefile.PL --replace "-lzbar" "-L${zbar.lib}/lib -lzbar"
       rm t/Processor.t
-      ls t
     '';
     doCheck = true;
     buildInputs =
