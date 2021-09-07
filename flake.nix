@@ -174,9 +174,20 @@
             test = true;
             develop = true;
           };
-          inherit (pkgs) mkShell nix-generate-from-cpan nodejs nodePackages;
-        in mkShell {
-          buildInputs = [ nix-generate-from-cpan nodejs nodePackages.npm perl ];
+          inherit (pkgs)
+            mkShell nix-generate-from-cpan npmlock2nix python39 gnumake gcc;
+          git = "${pkgs.git}/bin/git";
+        in npmlock2nix.shell {
+          src = self;
+          buildInputs = [ nix-generate-from-cpan perl ];
+          node_modules_attrs = { buildInputs = [ python39 gnumake gcc ]; };
+          shellHook = ''
+            alias clean="${git} clean -fxd --exclude=node_modules"
+            alias watch="npm run build:watch"
+
+            clean
+            npm run build
+          '';
         });
 
       defaultApp = forAllSystems (system: self.apps.${system}.runProject);
