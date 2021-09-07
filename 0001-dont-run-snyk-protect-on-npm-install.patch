@@ -1,0 +1,26 @@
+From 0cc9591493df945e1b7d4ddf7439b68ac8950c85 Mon Sep 17 00:00:00 2001
+From: thomassdk <thomassdk@pm.me>
+Date: Tue, 7 Sep 2021 12:14:42 +0100
+Subject: [PATCH] dont run snyk-protect on npm install
+
+---
+ package.json | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/package.json b/package.json
+index da8a0fe00..e67592a3b 100644
+--- a/package.json
++++ b/package.json
+@@ -20,8 +20,7 @@
+     "perlc:startup": "perl -c -CS -Ilib lib/startup_apache2.pl",
+     "perlc:cgi": "node scripts/check_perl.js cgi/*.pl",
+     "perlc:scripts": "node scripts/check_perl.js scripts/*.pl",
+-    "snyk-protect": "snyk protect",
+-    "prepare": "npm run snyk-protect"
++    "snyk-protect": "snyk protect"
+   },
+   "repository": {
+     "type": "git",
+-- 
+2.32.0
+

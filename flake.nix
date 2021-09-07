@@ -5,12 +5,17 @@
   # Nixpkgs / NixOS version to use.
   inputs.nixpkgs.url = "nixpkgs/nixos-21.05";
 
+  inputs.npmlock2nix-src = {
+    url = "github:nix-community/npmlock2nix";
+    flake = false;
+  };
+
   inputs.openfoodfacts-server-src = {
     url = "github:ngi-nix/openfoodfacts-server";
     flake = false;
   };
 
-  outputs = { self, nixpkgs, openfoodfacts-server-src }:
+  outputs = { self, nixpkgs, npmlock2nix-src, openfoodfacts-server-src }:
     let
       # Generate a user-friendly version numer.
       version =
@@ -130,17 +135,36 @@
           };
         } // final.callPackage ./nix/localPerlPackages.nix { };
 
-        # taken from https://github.com/nix-community/docker-nixpkgs/blob/master/overlay.nix
-        gitReallyMinimal = (final.git.override {
-          perlSupport = false;
-          pythonSupport = false;
-          withManual = false;
-          withpcre2 = false;
-        }).overrideAttrs (_: {
-          # installCheck is broken when perl is disabled
-          doInstallCheck = false;
-        });
+        npmlock2nix = prev.callPackage npmlock2nix-src { };
+
+        # node-gyp requires python make and a c/c++ compiler
+        build_NodeModules = let
+          inherit (final)
+            npmlock2nix python39 gnumake gcc lib stdenv CoreServices xcodebuild;
+        in npmlock2nix.node_modules {
+          src = self;
+          buildInputs = [ python39 gnumake gcc ]
+            ++ lib.optionals (stdenv.isDarwin) [ CoreServices xcodebuild ];
+          # this doesnt work as the package.json is symlinked from the store
+          # patchPhase = [ ./0001-dont-run-snyk-protect-on-npm-install.patch ];
+          # at the present this line has been deleted from the package.json
+          preBuild = "cp ${openfoodfacts-server-src}/.snyk ./";
+        };
+
+        build_npm = let inherit (final) npmlock2nix python39 gnumake gcc;
+        in npmlock2nix.build {
+          src = self;
+          installPhase = "cp -r html $out";
+          node_modules_attrs = { buildInputs = [ python39 gnumake gcc ]; };
+        };
+
       };
+
+      packages = forAllSystems
+        (system: { inherit (nixpkgsFor.${system}) node_modules build_npm; });
+
+      defaultPackage =
+        forAllSystems (system: self.packages.${system}.build_npm);
 
       devShell = forAllSystems (system:
         let
@@ -160,7 +184,6 @@
       apps = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
-          # node-gyp requires python make and a c/c++ compiler
           inherit (pkgs)
             writeShellScript nodejs nodePackages python39 gnumake gcc;
           docker = "${pkgs.docker}/bin/docker";
@@ -230,36 +253,36 @@
         pkgs = nixpkgsFor.x86_64-linux;
         inherit (pkgs) dockerTools;
         tag = null;
-        config = { WorkingDir = "/opt/product-opener"; };
+        config = {
+          WorkingDir = "/opt/product-opener";
+          ExposedPorts = { "80/tcp" = { }; };
+        };
       in {
-        backend-base =
-          let inherit (pkgs) apacheHttpd busybox cacert gnumeric wget;
-          in dockerTools.buildImage {
-            name = "backend-base";
-            inherit tag;
-            contents = [ apacheHttpd busybox cacert gnumeric wget ];
-            runAsRoot = ''
-              #!${pkgs.runtimeShell}
-              ${dockerTools.shadowSetup}
+        backend-base = let
+          inherit (pkgs)
+            apacheHttpd bashInteractive busybox cacert gnumeric wget;
+        in dockerTools.buildImage {
+          name = "backend-base";
+          inherit tag;
+          contents = [ apacheHttpd bashInteractive cacert gnumeric wget ];
+          runAsRoot = ''
+            #!${pkgs.runtimeShell}
+            ${dockerTools.shadowSetup}
 
-              adduser -H -D daemon
-              addgroup daemon daemon
+            adduser -H -D www-data
+            addgroup www-data www-data
 
-              # src uses apache2ctl in po-foreground.sh
-              # TODO: Patch
-              ln -s /bin/apachectl /bin/apache2ctl
+            # src uses apache2ctl in po-foreground.sh
+            # TODO: Patch
+            ln -s /bin/apachectl /bin/apache2ctl
 
-              mkdir -p /etc/httpd
-              cp -s ${apacheHttpd}/conf/httpd.conf /etc/httpd/
-              # sed -i 's|daemon|www-data|' /etc/httpd/httpd.conf
+            mkdir -p /var/log/apache2
+            mkdir -p /var/log/httpd
 
-              mkdir -p /var/log/apache2
-              mkdir -p /var/log/httpd
-
-              mkdir -p /opt/product-opener
-              cp -r ${self}/* /opt/product-opener/
-            '';
-          };
+            mkdir -p /opt/product-opener
+            cp -r ${self}/* /opt/product-opener/
+          '';
+        };
 
         backend-runnable = let perl = perlWithModules { inherit pkgs; };
         in dockerTools.buildLayeredImage {
@@ -309,14 +332,26 @@
           name = "frontend";
           inherit tag;
           contents = [ nginx ];
-            runAsRoot = ''
-              #!${pkgs.runtimeShell}
-              # copy built html into /opt/product-opener/html
-            '';
+          runAsRoot = ''
+            #!${pkgs.runtimeShell}
+            # copy built html into /opt/product-opener/html
+          '';
         };
       };
 
-      nixosConfigurations.container = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.base-container = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ({ pkgs, ... }: {
+            boot.isContainer = true;
+
+            networking.useDHCP = false;
+            networking.firewall.allowedTCPPorts = [ 80 ];
+          })
+        ];
+      };
+
+      nixosConfigurations.apache-container = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ({ pkgs, ... }: {
@@ -332,5 +367,6 @@
           })
         ];
       };
+
     };
 }
