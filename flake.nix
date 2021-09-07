@@ -161,7 +161,7 @@
       };
 
       packages = forAllSystems
-        (system: { inherit (nixpkgsFor.${system}) node_modules build_npm; });
+        (system: { inherit (nixpkgsFor.${system}) build_NodeModules build_npm; });
 
       defaultPackage =
         forAllSystems (system: self.packages.${system}.build_npm);
