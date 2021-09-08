@@ -2,6 +2,7 @@
 let
   inherit (builtins) toString;
   inherit (lib) mkForce makeBinPath;
+  frontendPort = "3000";
   networkName = "webnet";
   networks = [ networkName ];
   volumes = {
@@ -82,6 +83,7 @@ in {
       frontend.service = {
         image = "nginx:stable-alpine";
         depends_on = [ "backend" ];
+        ports = [ "${frontendPort}:80" ];
         volumes = [
           "${toString ./.}/html:/opt/product-opener/html"
           "${
