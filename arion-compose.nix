@@ -80,17 +80,20 @@ in {
         };
       };
 
-      frontend.service = {
-        image = "nginx:stable-alpine";
-        depends_on = [ "backend" ];
-        ports = [ "${frontendPort}:80" ];
-        volumes = [
-          "${toString ./.}/html:/opt/product-opener/html"
-          "${
-            toString ./.
-          }/frontend-git/conf/nginx.conf:/etc/nginx/conf.d/default.conf"
-        ];
-        inherit networks;
+      frontend = {
+        service = {
+          image = "nginx:stable-alpine";
+          depends_on = [ "backend" ];
+          volumes = [
+            "${pkgs.build_npm}:/opt/product-opener/html"
+            "${toString ./.}/docker/frontend-git/conf/nginx.conf:/etc/nginx/conf.d/default.conf"
+          ];
+          # Arion "loses" the final CMD in the docker file so that needs to be copied here
+          # https://github.com/nginxinc/docker-nginx/blob/f3fe494531f9b157d9c09ba509e412dace54cd4f/stable/alpine/Dockerfile
+          command = [ "nginx" "-g" "daemon off;" ];
+          ports = [ "${frontendPort}:80" ];
+          inherit networks;
+        };
       };
     };
   };
