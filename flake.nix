@@ -2,20 +2,23 @@
   description =
     "Open Food Facts is a food products database made by everyone, for everyone";
 
-  # Nixpkgs / NixOS version to use.
-  inputs.nixpkgs.url = "nixpkgs/nixos-21.05";
 
-  inputs.npmlock2nix-src = {
-    url = "github:nix-community/npmlock2nix";
-    flake = false;
+  inputs = {
+    nixpkgs.url = "nixpkgs/nixos-21.05";
+    arion.url = "github:hercules-ci/arion";
+
+    npmlock2nix = {
+      url = "github:nix-community/npmlock2nix";
+      flake = false;
+    };
+
+    openfoodfacts-server-src = {
+      url = "github:ngi-nix/openfoodfacts-server";
+      flake = false;
+    };
   };
 
-  inputs.openfoodfacts-server-src = {
-    url = "github:ngi-nix/openfoodfacts-server";
-    flake = false;
-  };
-
-  outputs = { self, nixpkgs, npmlock2nix-src, openfoodfacts-server-src }:
+  outputs = { self, nixpkgs, openfoodfacts-server-src, ... }@inputs:
     let
       # Generate a user-friendly version numer.
       version =
@@ -135,7 +138,10 @@
           };
         } // final.callPackage ./nix/localPerlPackages.nix { };
 
-        npmlock2nix = prev.callPackage npmlock2nix-src { };
+        npmlock2nix = prev.callPackage inputs.npmlock2nix { };
+
+        arion = inputs.arion.defaultPackage.${prev.system};
+
 
         # node-gyp requires python make and a c/c++ compiler
         build_NodeModules = let
