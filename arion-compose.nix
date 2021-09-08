@@ -47,9 +47,10 @@ in {
           useSystemd = true;
           configuration = {
             boot.tmpOnTmpfs = true;
+            # This clashes with the default setting of an empty string
+            networking.hostName = mkForce "productopener";
             services.httpd = {
               enable = true;
-              # hostName = "productopener";
               adminAddr = "productopener@example.org";
               enablePerl = true;
             };
