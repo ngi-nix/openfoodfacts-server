@@ -4,6 +4,7 @@ let
   inherit (lib) mkForce makeBinPath;
   # This is a bit hacky... is there a nicer way to do this?
   self = pkgs.self;
+  backendHostname = "productopener";
   frontendPort = "3000";
   networkName = "webnet";
   networks = [ networkName ];
@@ -51,7 +52,7 @@ in {
           configuration = {
             boot.tmpOnTmpfs = true;
             # This clashes with the default setting of an empty string
-            networking.hostName = mkForce "productopener";
+            networking.hostName = mkForce backendHostname;
             services.httpd = {
               enable = true;
               adminAddr = "productopener@example.org";
