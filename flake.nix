@@ -203,6 +203,13 @@
             alias watch="npm run build:watch"
 
             clean
+            npm run snyk-protect
+
+            # npmlock2nix builds the node_modules in a pure way
+            # this builds the assets in an impure way so that gulp can
+            # watch the files and update them during development
+            # on deployment the npm assets will be built reproducibly by nix
+            # based on the current commit
             npm run build
           '';
         });
