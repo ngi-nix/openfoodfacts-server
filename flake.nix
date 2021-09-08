@@ -38,9 +38,9 @@
           overlays = [ self.overlay ];
         });
 
-      perlWithModules = { pkgs, test ? false, develop ? false }:
+      perl4project = { pkgs }:
         let
-          base = with pkgs.perlPackages; [
+          baseModules = with pkgs.perlPackages; [
             mod_perl2
             GraphViz2 # Tests are failing but module is building correctly
             CGI
@@ -105,23 +105,29 @@
             ActionRetry
             LocaleMaketextLexiconGetcontext
           ];
-          testMods = with pkgs.perlPackages; [
+          testModules = with pkgs.perlPackages; [
             TestSimple13
             TestNumberDelta
             LogAnyAdapterTAP
           ];
-          developMods = with pkgs.perlPackages; [
+          developModules = with pkgs.perlPackages; [
             PerlCritic
             TermReadLineGnu
             TermReadKey
             ApacheDB
           ];
-        in pkgs.perl.withPackages (pp:
-          base ++ (if test then testMods else [ ])
-          ++ (if develop then developMods else [ ]));
+        in {
+          base = pkgs.perl.withPackages (pp: baseModules);
+          test = pkgs.perl.withPackages (pp: baseModules ++ testModules);
+          develop = pkgs.perl.withPackages (pp: baseModules ++ developModules);
+          complete = pkgs.perl.withPackages
+            (pp: baseModules ++ testModules ++ developModules);
+        };
     in {
       # Nixpkgs overlays.
       overlay = final: prev: {
+
+        perlWithModules = perl4project { pkgs = final; };
 
         perlPackages = prev.perlPackages.override {
           overrides = pkgs: {
@@ -175,11 +181,7 @@
       devShell = forAllSystems (system:
         let
           pkgs = nixpkgsFor.${system};
-          perl = perlWithModules {
-            inherit pkgs;
-            test = true;
-            develop = true;
-          };
+          perl = pkgs.perlWithModules.complete;
           inherit (pkgs)
             mkShell nix-generate-from-cpan arion npmlock2nix python39 gnumake
             gcc;
