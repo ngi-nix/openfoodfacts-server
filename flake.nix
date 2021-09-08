@@ -148,6 +148,10 @@
 
         arion = inputs.arion.defaultPackage.${prev.system};
 
+        project = inputs.arion.lib.build {
+          modules = [ ./arion-compose.nix ];
+          pkgs = final;
+        };
 
         # node-gyp requires python make and a c/c++ compiler
         build_NodeModules = let
@@ -172,11 +176,12 @@
 
       };
 
-      packages = forAllSystems
-        (system: { inherit (nixpkgsFor.${system}) build_NodeModules build_npm; });
+      packages = forAllSystems (system: {
+        inherit (nixpkgsFor.${system}) build_NodeModules build_npm project;
+      });
 
       defaultPackage =
-        forAllSystems (system: self.packages.${system}.build_npm);
+        forAllSystems (system: self.packages.${system}.project);
 
       devShell = forAllSystems (system:
         let

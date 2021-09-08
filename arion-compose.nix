@@ -1,7 +1,6 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
-  lib = pkgs.lib;
-  inherit (lib) toString mkForce;
+  inherit (lib) toString mkForce makeBinPath;
   networkName = "webnet";
   networks = [ networkName ];
   volumes = {
@@ -56,7 +55,8 @@ in {
             # Copied over from the examples
             # Not sure as to the reason why these are necessary
             services.nscd.enable = false;
-            system.nssModules = lib.mkForce [ ];
+            system.nssModules = mkForce [ ];
+            environment.systemPackages = [ pkgs.perlWithModules.complete ];
           };
         };
         service = {
