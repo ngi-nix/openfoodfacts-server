@@ -67,7 +67,7 @@ set -e
 rm -f /usr/local/apache2/logs/httpd.pid
 
 if [ -n "$PERLDB" ]; then
-  exec apache2ctl -X -DPERLDB
+  exec apachectl -X -DPERLDB
 else
-  exec apache2ctl -DFOREGROUND
+  exec apachectl -DFOREGROUND
 fi
