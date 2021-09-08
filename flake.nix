@@ -181,11 +181,12 @@
             develop = true;
           };
           inherit (pkgs)
-            mkShell nix-generate-from-cpan npmlock2nix python39 gnumake gcc;
+            mkShell nix-generate-from-cpan arion npmlock2nix python39 gnumake
+            gcc;
           git = "${pkgs.git}/bin/git";
         in npmlock2nix.shell {
           src = self;
-          buildInputs = [ nix-generate-from-cpan perl ];
+          buildInputs = [ nix-generate-from-cpan perl arion ];
           node_modules_attrs = { buildInputs = [ python39 gnumake gcc ]; };
           shellHook = ''
             alias clean="${git} clean -fxd --exclude=node_modules"
