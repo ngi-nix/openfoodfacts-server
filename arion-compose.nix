@@ -5,7 +5,7 @@ let
   # This is a bit hacky... is there a nicer way to do this?
   self = pkgs.self;
   backendHostname = "productopener";
-  frontendPort = "3000";
+  frontendPort = "80";
   networkName = "webnet";
   networks = [ networkName ];
   volumes = {
