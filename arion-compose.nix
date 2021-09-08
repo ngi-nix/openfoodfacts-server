@@ -53,9 +53,20 @@ in {
             boot.tmpOnTmpfs = true;
             # This clashes with the default setting of an empty string
             networking.hostName = mkForce backendHostname;
-            environment.systemPackages = with pkgs; [ bash perlWithModules.complete gnumeric ];
+            users = {
+              mutableUsers = false;
+              users.root.password = "password";
+              users."www-data" = {
+                isSystemUser = true;
+                group = "www-data";
+                uid = 500;
+              };
+              groups."www-data" = { gid = 501; };
+            };
             services.httpd = {
               enable = true;
+              user = "www-data";
+              group = "www-data";
               adminAddr = "productopener@example.org";
               enablePerl = true;
             };
@@ -65,6 +76,7 @@ in {
             system.nssModules = mkForce [ ];
           };
         };
+        image.contents = with pkgs; [ busybox perlWithModules.complete ];
         service = {
           depends_on = [ "mongodb" "memcached" "postgres" ];
           tmpfs = [ "/mnt/podata/mnt" ];
@@ -78,10 +90,15 @@ in {
             "${self}/docker/backend-dev/conf/apache.conf:/etc/apache2/sites-enabled/product-opener.conf"
             "${self}/docker/backend-dev/conf/po-foreground.sh:/usr/local/bin/po-foreground.sh"
           ];
-          # command = [
-          #   "${pkgs.bashinteractive}/bin/sh"
-          #   "${toString ./.}/backend-dev/conf/po-foreground.sh"
-          # ];
+          # grrrr:
+          # backend_1    | /usr/local/bin/po-foreground.sh: line 2: mkdir: not found
+          # backend_1    | /usr/local/bin/po-foreground.sh: line 59: perl: not found
+          # backend_1    | /usr/local/bin/po-foreground.sh: line 60: chown: not found
+          # backend_1    | /usr/local/bin/po-foreground.sh: line 61: chown: not found
+          # backend_1    | /usr/local/bin/po-foreground.sh: line 67: rm: not found
+          # This cannot find any of the environment system packages?
+          # Do I need to call it with a paritcular shell?
+          # command = [ "/bin/sh" "/usr/local/bin/po-foreground.sh" ];
           inherit networks;
         };
       };
