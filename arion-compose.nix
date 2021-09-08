@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 let
-  inherit (lib) toString mkForce makeBinPath;
+  inherit (builtins) toString;
+  inherit (lib) mkForce makeBinPath;
   networkName = "webnet";
   networks = [ networkName ];
   volumes = {
