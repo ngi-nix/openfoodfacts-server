@@ -53,6 +53,7 @@ in {
             boot.tmpOnTmpfs = true;
             # This clashes with the default setting of an empty string
             networking.hostName = mkForce backendHostname;
+            environment.systemPackages = with pkgs; [ bash perlWithModules.complete gnumeric ];
             services.httpd = {
               enable = true;
               adminAddr = "productopener@example.org";
@@ -62,7 +63,6 @@ in {
             # Not sure as to the reason why these are necessary
             services.nscd.enable = false;
             system.nssModules = mkForce [ ];
-            environment.systemPackages = [ pkgs.perlWithModules.complete ];
           };
         };
         service = {
