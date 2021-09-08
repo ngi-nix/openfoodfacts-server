@@ -173,15 +173,16 @@
           installPhase = "cp -r html $out";
           node_modules_attrs = { buildInputs = [ python39 gnumake gcc ]; };
         };
-
       };
+
+      # Needed to run arion
+      legacyPackages.x86_64-linux = nixpkgsFor.x86_64-linux;
 
       packages = forAllSystems (system: {
         inherit (nixpkgsFor.${system}) build_NodeModules build_npm project;
       });
 
-      defaultPackage =
-        forAllSystems (system: self.packages.${system}.project);
+      defaultPackage = forAllSystems (system: self.packages.${system}.project);
 
       devShell = forAllSystems (system:
         let
