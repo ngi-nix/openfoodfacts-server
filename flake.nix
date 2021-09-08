@@ -146,6 +146,8 @@
 
         npmlock2nix = prev.callPackage inputs.npmlock2nix { };
 
+        inherit self;
+
         arion = inputs.arion.defaultPackage.${prev.system};
 
         project = inputs.arion.lib.build {

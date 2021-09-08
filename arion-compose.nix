@@ -2,6 +2,8 @@
 let
   inherit (builtins) toString;
   inherit (lib) mkForce makeBinPath;
+  # This is a bit hacky... is there a nicer way to do this?
+  self = pkgs.self;
   frontendPort = "3000";
   networkName = "webnet";
   networks = [ networkName ];
@@ -66,11 +68,14 @@ in {
           depends_on = [ "mongodb" "memcached" "postgres" ];
           tmpfs = [ "/mnt/podata/mnt" ];
           volumes = [
-            # "${toString ./.}:/opt/product-opener"
+            "${self}:/opt/product-opener"
             "podata:/mnt/podata"
-            # "${toString ./.}/backend-dev/conf/log.conf:/mnt/podata/log.conf"
-            # "${toString ./.}/backend-dev/conf/minion_log.conf:/mnt/podata/minion_log.conf"
-            # "${toString ./.}/backend-dev/conf/apache.conf:/etc/apache2/sites-enabled/product-opener.conf"
+            "${self}/docker/backend-dev/conf/Config.pm:/opt/product-opener/lib/ProductOpener/Config.pm"
+            "${self}/docker/backend-dev/conf/Config2.pm:/opt/product-opener/lib/ProductOpener/Config2.pm"
+            "${self}/docker/backend-dev/conf/log.conf:/mnt/podata/log.conf"
+            "${self}/docker/backend-dev/conf/minion_log.conf:/mnt/podata/minion_log.conf"
+            "${self}/docker/backend-dev/conf/apache.conf:/etc/apache2/sites-enabled/product-opener.conf"
+            "${self}/docker/backend-dev/conf/po-foreground.sh:/usr/local/bin/po-foreground.sh"
           ];
           # command = [
           #   "${pkgs.bashinteractive}/bin/sh"
@@ -86,7 +91,7 @@ in {
           depends_on = [ "backend" ];
           volumes = [
             "${pkgs.build_npm}:/opt/product-opener/html"
-            "${toString ./.}/docker/frontend-git/conf/nginx.conf:/etc/nginx/conf.d/default.conf"
+            "${self}/docker/frontend-git/conf/nginx.conf:/etc/nginx/conf.d/default.conf"
           ];
           # Arion "loses" the final CMD in the docker file so that needs to be copied here
           # https://github.com/nginxinc/docker-nginx/blob/f3fe494531f9b157d9c09ba509e412dace54cd4f/stable/alpine/Dockerfile
