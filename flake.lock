@@ -1,6 +1,38 @@
 {
   "nodes": {
+    "arion": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1630129451,
+        "narHash": "sha256-YKtjgfiaO4awMl8fqlMlCr0dYtiOsKXplCQINTRGG5Y=",
+        "owner": "hercules-ci",
+        "repo": "arion",
+        "rev": "ac20241a410874b09fd6ec29b3acb69abbf05314",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "arion",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
+      "locked": {
+        "lastModified": 1601906239,
+        "narHash": "sha256-P1jBYbYeFswig/0FKbgh+BpVhh9iurD3m0T2ae4gdx8=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "c2bb4af48d26ed091e5674394bacbf8d488c7939",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_2": {
       "locked": {
         "lastModified": 1630481079,
         "narHash": "sha256-leWXLchbAbqOlLT6tju631G40SzQWPqaAXQG3zH1Imw=",
@@ -15,7 +47,7 @@
         "type": "indirect"
       }
     },
-    "npmlock2nix-src": {
+    "npmlock2nix": {
       "flake": false,
       "locked": {
         "lastModified": 1630619263,
@@ -49,8 +81,9 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "npmlock2nix-src": "npmlock2nix-src",
+        "arion": "arion",
+        "nixpkgs": "nixpkgs_2",
+        "npmlock2nix": "npmlock2nix",
         "openfoodfacts-server-src": "openfoodfacts-server-src"
       }
     }
