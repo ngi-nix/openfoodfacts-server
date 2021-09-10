@@ -220,46 +220,7 @@
         let
           pkgs = nixpkgsFor.${system};
           inherit (pkgs) writeShellScript;
-          docker = "${pkgs.docker}/bin/docker";
-          docker-compose = "${pkgs.docker-compose}/bin/docker-compose";
         in {
-
-          start_dev = {
-            type = "app";
-            program = "${writeShellScript "build dev environment" ''
-              ${docker-compose} -f docker/docker-compose.yml -f docker/docker-compose.dev.yml up
-            ''}";
-          };
-
-          build_dev = {
-            type = "app";
-            program = "${writeShellScript "load images" ''
-              IMAGES="${
-                builtins.toString (builtins.attrValues self.dockerImages)
-              }"
-
-              # Put this behind a flag?
-              # Need this to be more specific
-              # ${docker} system prune -f
-
-              for image in $IMAGES
-              do
-                ${docker} load < $image
-              done
-
-            ''}";
-          };
-
-          # Need to restrict this to just the docker assets related to the project
-          clean_docker = {
-            type = "app";
-            program = "${writeShellScript "remove all Docker assets" ''
-              ${docker-compose} -f docker/docker-compose.yml -f docker/docker-compose.dev.yml down
-              ${docker} container prune -f
-              ${docker} volume prune -f
-              ${docker} rmi $(docker images -q) -f
-            ''}";
-          };
         });
     };
 }
