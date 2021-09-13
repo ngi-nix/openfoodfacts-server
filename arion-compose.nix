@@ -58,6 +58,16 @@ in {
             boot.tmpOnTmpfs = true;
             # This clashes with the default setting of an empty string
             networking.hostName = mkForce backendHostname;
+            networking.firewall.allowedTCPPorts = [ 80 ];
+            networking.firewall.allowedUDPPorts = [ 80 ];
+            environment.systemPackages = with pkgs; [
+              busybox
+              perlWithModules.complete
+              imagemagick
+              graphviz
+              tesseract
+              gnumeric
+            ];
             users = {
               mutableUsers = false;
               users.root.password = "password";
@@ -74,14 +84,134 @@ in {
               group = "www-data";
               adminAddr = "productopener@example.org";
               enablePerl = true;
+              extraConfig = ''
+                # Apache + mod_perl handles only the dynamic HTML generated pages
+                # and CGI scripts.
+                # Static files are served directly by the NGINX reverse proxy.
+
+                ServerAdmin contact@productopener.localhost
+
+                PerlSwitches -I/opt/product-opener/lib -I${pkgs.perlWithModules.complete}/lib/perl5/site_perl
+
+                PerlWarn On
+
+                <IfDefine PERLDB>
+
+                  PerlSetEnv PERLDB_OPTS "RemotePort=socat:53505"
+
+                  <Perl>
+                    use APR::Pool ();
+                    use Apache::DB ();
+                    Apache::DB->init();
+                  </Perl>
+
+                  <Location />
+                    PerlFixupHandler Apache::DB
+                  </Location>
+
+                </IfDefine>
+
+                PerlRequire /opt/product-opener/lib/startup_apache2.pl
+
+                # log the X-Forwarded-For IP address (the client ip) in access_log
+                LogFormat "%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" proxy
+
+                <Location /cgi>
+                  SetHandler perl-script
+                  PerlResponseHandler ModPerl::Registry
+                  PerlOptions +ParseHeaders
+                  Options +ExecCGI
+                  Require all granted
+                </Location>
+
+                <VirtualHost *>
+                  DocumentRoot /opt/product-opener/html
+                  ServerName productopener.localhost
+                  LogLevel warn
+                  ScriptAlias /cgi/ "/opt/product-opener/cgi/"
+
+                  <Directory /opt/product-opener/html>
+                    Require all granted
+                  </Directory>
+
+                </VirtualHost>
+
+                PerlPostReadRequestHandler get_remote_proxy_address
+              '';
             };
             # Copied over from the examples
             # Not sure as to the reason why these are necessary
             services.nscd.enable = false;
             system.nssModules = mkForce [ ];
+            systemd.services.startup = {
+              script = ''
+                mkdir -p /mnt/podata/products /mnt/podata/logs /mnt/podata/users /mnt/podata/po /mnt/podata/orgs
+
+                if [ ! -e /mnt/podata/lang ]
+                then
+                  ln -sf /opt/product-opener/lang /mnt/podata/lang
+                fi
+
+                if [ ! -e /mnt/podata/po/common ]
+                then
+                  ln -sf /opt/product-opener/po/common /mnt/podata/po/common
+                fi
+
+                if [ ! -e /mnt/podata/po/site-specific ]
+                then
+                  ln -sf /opt/product-opener/po/openfoodfacts /mnt/podata/po/site-specific
+                fi
+
+                if [ ! -e /mnt/podata/po/tags ]
+                then
+                  ln -sf /opt/product-opener/po/tags /mnt/podata/po/tags
+                fi
+
+                if [ ! -e /mnt/podata/taxonomies ]
+                then
+                  ln -sf /opt/product-opener/taxonomies /mnt/podata/taxonomies
+                fi
+
+                if [ ! -e /mnt/podata/ingredients ]
+                then
+                  ln -sf /opt/product-opener/ingredients /mnt/podata/ingredients
+                fi
+
+                if [ ! -e /mnt/podata/emb_codes ]
+                then
+                  ln -sf /opt/product-opener/emb_codes /mnt/podata/emb_codes
+                fi
+
+                if [ ! -e /mnt/podata/packager-codes ]
+                then
+                  ln -sf /opt/product-opener/packager-codes /mnt/podata/packager-codes
+                fi
+
+                if [ ! -e /mnt/podata/ecoscore ]
+                then
+                  ln -sf /opt/product-opener/ecoscore /mnt/podata/ecoscore
+                fi
+
+                if [ ! -e /mnt/podata/forest-footprint ]
+                then
+                  ln -sf /opt/product-opener/forest-footprint /mnt/podata/forest-footprint
+                fi
+
+                if [ ! -e /mnt/podata/templates ]
+                then
+                  ln -sf /opt/product-opener/templates /mnt/podata/templates
+                fi
+
+                ${pkgs.perlWithModules.complete}/bin/perl -I/opt/product-opener/lib /opt/product-opener/scripts/build_lang.pl
+                chown -R www-data:www-data /mnt/podata
+                chown -R www-data:www-data /opt/product-opener/html/images/products
+
+              '';
+              before = [ "httpd.service" ];
+              wantedBy = [ "multi-user.target" ];
+            };
           };
         };
-        image.contents = with pkgs; [ busybox perlWithModules.complete ];
         service = {
           depends_on = [ "mongodb" "memcached" "postgres" ];
           tmpfs = [ "/mnt/podata/mnt" ];
@@ -94,18 +224,9 @@ in {
             "${self}/docker/backend-dev/conf/Config2.pm:/opt/product-opener/lib/ProductOpener/Config2.pm"
             "${self}/docker/backend-dev/conf/log.conf:/mnt/podata/log.conf"
             "${self}/docker/backend-dev/conf/minion_log.conf:/mnt/podata/minion_log.conf"
-            "${self}/docker/backend-dev/conf/apache.conf:/etc/apache2/sites-enabled/product-opener.conf"
-            "${self}/docker/backend-dev/conf/po-foreground.sh:/usr/local/bin/po-foreground.sh"
+            # "${self}/docker/backend-dev/conf/apache.conf:/etc/apache2/sites-enabled/product-opener.conf"
+            # "${self}/docker/backend-dev/conf/po-foreground.sh:/usr/local/bin/po-foreground.sh"
           ];
-          # grrrr:
-          # backend_1    | /usr/local/bin/po-foreground.sh: line 2: mkdir: not found
-          # backend_1    | /usr/local/bin/po-foreground.sh: line 59: perl: not found
-          # backend_1    | /usr/local/bin/po-foreground.sh: line 60: chown: not found
-          # backend_1    | /usr/local/bin/po-foreground.sh: line 61: chown: not found
-          # backend_1    | /usr/local/bin/po-foreground.sh: line 67: rm: not found
-          # This cannot find any of the environment system packages?
-          # Do I need to call it with a paritcular shell?
-          # command = [ "/bin/sh" "/usr/local/bin/po-foreground.sh" ];
           inherit networks;
         };
       };
