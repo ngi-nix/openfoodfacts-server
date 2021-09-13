@@ -12,6 +12,8 @@ let
     dbdata = null;
     pgdata = null;
     podata = null;
+    product_images = null;
+    html_data = null;
   };
 in {
   config = {
@@ -86,6 +88,8 @@ in {
           volumes = [
             "${self}:/opt/product-opener"
             "podata:/mnt/podata"
+            "product_images:/opt/product-opener/html/images/products"
+            "html_data:/opt/product-opener/html/data"
             "${self}/docker/backend-dev/conf/Config.pm:/opt/product-opener/lib/ProductOpener/Config.pm"
             "${self}/docker/backend-dev/conf/Config2.pm:/opt/product-opener/lib/ProductOpener/Config2.pm"
             "${self}/docker/backend-dev/conf/log.conf:/mnt/podata/log.conf"
@@ -111,7 +115,9 @@ in {
           image = "nginx:stable-alpine";
           depends_on = [ "backend" ];
           volumes = [
-            "${pkgs.build_npm}:/opt/product-opener/html"
+            "product_images:/opt/product-opener/html/images/products"
+            "html_data:/opt/product-opener/html/data"
+            "${self}/html:/opt/product-opener/html"
             "${self}/docker/frontend-git/conf/nginx.conf:/etc/nginx/conf.d/default.conf"
           ];
           # Arion "loses" the final CMD in the docker file so that needs to be copied here
