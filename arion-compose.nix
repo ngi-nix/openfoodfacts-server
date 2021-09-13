@@ -28,11 +28,13 @@ in {
         image = "mongo:4.4";
         volumes = [ "dbdata:/var/lib/mongodb" ];
         inherit networks;
+        command = [ "mongod" ];
       };
 
       memcached.service = {
         image = "memcached:1.6-alpine";
         inherit networks;
+        command = [ "memcached" ];
       };
 
       postgres.service = {
@@ -44,6 +46,7 @@ in {
           POSTGRES_DB = "minion";
         };
         inherit networks;
+        command = [ "postgres" ];
       };
 
       backend = {
